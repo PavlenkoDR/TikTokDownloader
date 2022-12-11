@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TikTokDownloader.DownloadBanner" BackgroundColor="#20a0a0a0">
+    <ContentPage.Content>
+        <Grid IsEnabled="true">
+            <ActivityIndicator IsVisible="true" IsRunning="true" Scale="0.2"/>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>
