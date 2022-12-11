@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TikTokDownloader.DownloadPage"
+             Title="Download page">
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout Padding="10" Spacing ="10">
+                <Label Text="Video" FontSize="Title"/>
+                <Label Text="{Binding data.video_description}" FontSize="Subtitle"/>
+                <StackLayout BindableLayout.ItemsSource="{Binding data.video_list}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="60"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Text="{Binding description}" Margin="10" VerticalOptions="Center" HorizontalOptions="Start"/>
+                                    <Button Grid.Column="1" Text="⬇️" Clicked="Button_Video_Clicked" CommandParameter="{Binding}" FontSize="30" BackgroundColor="White"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+                <Label Text="Music" FontSize="Title"/>
+                <Label Text="{Binding data.music_description}" FontSize="Subtitle"/>
+                <StackLayout BindableLayout.ItemsSource="{Binding data.music_list}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="60"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Text="{Binding description}" Margin="10" VerticalOptions="Center" HorizontalOptions="Start"/>
+                                    <Button Grid.Column="1" Text="⬇️" Clicked="Button_Music_Clicked" CommandParameter="{Binding}" FontSize="30" BackgroundColor="White"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
