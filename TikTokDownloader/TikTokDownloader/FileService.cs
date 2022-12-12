@@ -4,6 +4,6 @@ namespace TikTokDownloader
 {
     public interface IFileService
     {
-        Task Save(byte[] data, string name);
+        Task Save(byte[] data, string name, bool isSaveToDownloads);
     }
 }

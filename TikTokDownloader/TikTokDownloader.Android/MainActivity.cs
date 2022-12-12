@@ -30,7 +30,7 @@ namespace TikTokDownloader.Droid
     }
     public class FileService : IFileService
     {
-        public async Task Save(byte[] data, string name)
+        public async Task Save(byte[] data, string name, bool isSaveToDownloads)
         {
             if (await Permissions.CheckStatusAsync<Permissions.StorageWrite>() == PermissionStatus.Granted ||
                 await Permissions.RequestAsync<Permissions.StorageWrite>() == PermissionStatus.Granted)
@@ -42,10 +42,10 @@ namespace TikTokDownloader.Droid
                         await Permissions.RequestAsync<Permissions.Media>() == PermissionStatus.Granted)
                     {
                         string path;
-                        if (Android.OS.Environment.IsExternalStorageEmulated)
+                        if (Environment.IsExternalStorageEmulated)
                         {
                             //(Android.OS.Environment.DirectoryDownloads)
-                            path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath;
+                            path = Environment.GetExternalStoragePublicDirectory(isSaveToDownloads ? Environment.DirectoryDownloads : Environment.DirectoryDcim).AbsolutePath;
                         }
                         else
                         {
