@@ -11,6 +11,7 @@ namespace TikTokDownloader
             InitializeComponent();
 
             var navigationPage = new NavigationPage(new MainPage());
+            navigationPage.BarBackgroundColor = Color.FromHex("#6983fa");
             MainPage = navigationPage;
         }
 

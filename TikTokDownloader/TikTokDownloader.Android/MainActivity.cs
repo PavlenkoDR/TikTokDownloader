@@ -45,7 +45,14 @@ namespace TikTokDownloader.Droid
                         if (Environment.IsExternalStorageEmulated)
                         {
                             //(Android.OS.Environment.DirectoryDownloads)
-                            path = Environment.GetExternalStoragePublicDirectory(isSaveToDownloads ? Environment.DirectoryDownloads : Environment.DirectoryDcim).AbsolutePath;
+                            if (isSaveToDownloads)
+                            {
+                                path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDownloads).AbsolutePath;
+                            }
+                            else
+                            {
+                                path = Path.Combine(Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDcim).AbsolutePath, "Camera");
+                            }
                         }
                         else
                         {

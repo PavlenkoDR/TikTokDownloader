@@ -4,7 +4,18 @@
              x:Class="TikTokDownloader.DownloadBanner" BackgroundColor="#20a0a0a0">
     <ContentPage.Content>
         <Grid IsEnabled="true">
-            <ActivityIndicator IsVisible="true" IsRunning="true" Scale="0.2"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <ActivityIndicator Grid.Row="0" IsVisible="true" IsRunning="true" Scale="1" VerticalOptions="EndAndExpand" HorizontalOptions="CenterAndExpand"/>
+                <StackLayout Margin="0, 18, 0, 0" Grid.Row="1" IsVisible="{Binding tryCountEnabled, Mode=OneWay}">
+                    <Frame Padding="5" HorizontalOptions="Center" BackgroundColor="#eaeaea" CornerRadius="15">
+                        <Label Text="{Binding tryCountFormatted, Mode=OneWay}" TextColor="Black" VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand"/>
+                    </Frame>
+                </StackLayout>
+            </Grid>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

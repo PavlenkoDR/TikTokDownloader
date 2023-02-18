@@ -12,11 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\cancel.png" />
+    <None Remove="Assets\link.jpg" />
+    <None Remove="Assets\share.jpg" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets\cancel.png" />
+    <EmbeddedResource Include="Assets\link.jpg" />
+    <EmbeddedResource Include="Assets\share.jpg" />
   </ItemGroup>
 
   <ItemGroup>

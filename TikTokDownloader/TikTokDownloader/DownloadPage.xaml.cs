@@ -11,7 +11,7 @@ namespace TikTokDownloader
     {
         public string url { get; set; }
         private string _description;
-        public string description { get => $"Download {_description}"; set => _description = value; }
+        public string description { get => $"Скачать {_description}"; set => _description = value; }
         public string fileName { get; set; }
     }
     public struct DownloadData
@@ -52,22 +52,22 @@ namespace TikTokDownloader
 
             if (data.url_display_image_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Download no watermark images", downloadInfo = data.url_display_image_list });
+                imageList.Add(new ImageUrlDescription { description = "Скачать изображения без водяного знака", downloadInfo = data.url_display_image_list });
             }
 
             if (data.url_owner_watermark_image_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Download watermark images", downloadInfo = data.url_owner_watermark_image_list });
+                imageList.Add(new ImageUrlDescription { description = "Скачать изображения с водяным знаком", downloadInfo = data.url_owner_watermark_image_list });
             }
 
             if (data.url_user_watermark_image_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Download watermark images with user sign", downloadInfo = data.url_user_watermark_image_list });
+                imageList.Add(new ImageUrlDescription { description = "Скачать изображения с водяным знаком и значком пользователя", downloadInfo = data.url_user_watermark_image_list });
             }
 
             if (data.url_thumbnail_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Download thumbnail no watermark images", downloadInfo = data.url_thumbnail_list });
+                imageList.Add(new ImageUrlDescription { description = "Скачать миниатюру без водяного знака", downloadInfo = data.url_thumbnail_list });
             }
 
             BindingContext = this;
@@ -106,7 +106,7 @@ namespace TikTokDownloader
             }
 
             await Navigation.PopModalAsync();
-            await DisplayAlert("Success!", isSaveToDownloads ? "Saved in downloads" : "Saved in gallery", "OK");
+            await DisplayAlert("Успешно!", isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею", "OK");
         }
     }
 }

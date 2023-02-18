@@ -11,71 +11,50 @@
                     <ColumnDefinition Width="50"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="End" Text="Save to Gallery"/>
+                <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="End" Text="Сохранить в галерею"/>
                 <Switch Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center" IsToggled="{Binding isSaveToDownloads}" OnColor="DarkGray" ThumbColor="#00a6ed"/>
-                <Label Grid.Column="2" VerticalOptions="Center" HorizontalOptions="Start" Text="Save to Downloads"/>
+                <Label Grid.Column="2" VerticalOptions="Center" HorizontalOptions="Start" Text="Сохранить в загрузки"/>
             </Grid>
             <ScrollView>
                 <StackLayout Padding="10" Spacing ="10">
-                    <Label Text="{Binding data.video_description}" FontSize="Subtitle" IsVisible="{Binding isHaveDescription}" Margin="0, 0, 0, 15"/>
-                    <Frame IsVisible="{Binding isHaveVideos}">
+                    <Label Margin="25, 0, 25, 15" Text="{Binding data.video_description}" FontSize="Subtitle" IsVisible="{Binding isHaveDescription}"/>
+                    <Frame CornerRadius="15" IsVisible="{Binding isHaveVideos}">
                         <StackLayout>
-                            <Label Text="Video" FontSize="Title"/>
+                            <Label Margin="5, 0, 0, 10" TextColor="Black" Text="Видео" FontSize="Title" />
                             <StackLayout BindableLayout.ItemsSource="{Binding data.video_list}">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Frame Padding="5">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="60"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Label Grid.Column="0" Text="{Binding description}" Margin="10" VerticalOptions="Center" HorizontalOptions="Start"/>
-                                                <Button Grid.Column="1" Text="⬇️" Clicked="DownloadClicked" CommandParameter="{Binding}" FontSize="30" BackgroundColor="White"/>
-                                            </Grid>
+                                        <Frame Padding="0" CornerRadius="15">
+                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </StackLayout>
                         </StackLayout>
                     </Frame>
-                    <Frame IsVisible="{Binding isHaveImages}">
+                    <Frame CornerRadius="15" IsVisible="{Binding isHaveImages}">
                         <StackLayout>
-                            <Label Text="Images" FontSize="Title"/>
+                            <Label Margin="5, 0, 0, 10" TextColor="Black" Text="Изображения" FontSize="Title"/>
                             <StackLayout BindableLayout.ItemsSource="{Binding imageList}">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Frame Padding="5">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="60"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Label Grid.Column="0" Text="{Binding description}" Margin="10" VerticalOptions="Center" HorizontalOptions="Start"/>
-                                                <Button Grid.Column="1" Text="⬇️" Clicked="DownloadClicked" CommandParameter="{Binding downloadInfo}" FontSize="30" BackgroundColor="White"/>
-                                            </Grid>
+                                        <Frame Padding="0" CornerRadius="15">
+                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" Clicked="DownloadClicked" CommandParameter="{Binding downloadInfo}"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </StackLayout>
                         </StackLayout>
                     </Frame>
-                    <Frame IsVisible="{Binding isHaveMusic}">
+                    <Frame CornerRadius="15" IsVisible="{Binding isHaveMusic}">
                         <StackLayout>
-                            <Label Text="Music" FontSize="Title"/>
-                            <Label Text="{Binding data.music_description}" FontSize="Subtitle"/>
+                            <Label Margin="5, 0, 0, 0" TextColor="Black" Text="Музыка" FontSize="Title"/>
+                            <Label Margin="5, 0, 0, 0" TextColor="Black" Text="{Binding data.music_description}" FontSize="Subtitle"/>
                             <StackLayout BindableLayout.ItemsSource="{Binding data.music_list}">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Frame Padding="5">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="60"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Label Grid.Column="0" Text="{Binding description}" Margin="10" VerticalOptions="Center" HorizontalOptions="Start"/>
-                                                <Button Grid.Column="1" Text="⬇️" Clicked="DownloadClicked" CommandParameter="{Binding}" FontSize="30" BackgroundColor="White"/>
-                                            </Grid>
+                                        <Frame Padding="0" CornerRadius="15">
+                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
