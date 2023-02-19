@@ -107,7 +107,7 @@ namespace TikTokDownloader
             }
 
             await Navigation.PopModalAsync();
-            await DisplayAlert("Успешно!", isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею", "OK");
+            DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
 
             (sender as Button).IsEnabled = true;
         }

@@ -11,7 +11,7 @@
             <RowDefinition Height="5*"/>
         </Grid.RowDefinitions>
         <StackLayout Grid.Row="0" VerticalOptions="EndAndExpand">
-            <Grid Padding="5" Margin="0,0,0,50">
+            <Grid Padding="5" Margin="0,0,0,50" MinimumHeightRequest="300">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -36,11 +36,14 @@
             <Grid>
                 <Frame Padding="10, 0, 5, 0" CornerRadius="15" BackgroundColor="#eaeaea">
                     <Grid>
-                        <Editor TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges" Margin="0, 0, 30, 0"/>
+                        <Editor TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges" Margin="0, 0, 60, 0"/>
                         <BoxView BackgroundColor="#eaeaea" HeightRequest="11" VerticalOptions="End"/>
                     </Grid>
                 </Frame>
-                <StackLayout HorizontalOptions="End" VerticalOptions="Center" Margin="0, 0, 5, 0">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Margin="0, 0, 5, 0">
+                    <Frame Padding="0, 0, 0, 0" BorderColor="Black" CornerRadius="30">
+                        <Button Margin="0, 0, 0, 0" BackgroundColor="White" Text="📋" FontSize="15" FontAttributes="Bold" CornerRadius="90" HeightRequest="30" WidthRequest="30" Padding="2" VerticalOptions="Center" Clicked="Button_Clicked"/>
+                    </Frame>
                     <Frame Padding="0, 0, 0, 0" BorderColor="Black" CornerRadius="30">
                         <Button Margin="0, 0, 0, 0" BackgroundColor="White" Text="🗑️" FontSize="15" FontAttributes="Bold" CornerRadius="90" HeightRequest="30" WidthRequest="30" Padding="2" VerticalOptions="Center" Clicked="ImageButton_Clicked"/>
                     </Frame>

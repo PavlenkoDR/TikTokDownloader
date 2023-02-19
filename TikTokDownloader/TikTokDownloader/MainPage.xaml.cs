@@ -23,6 +23,21 @@ namespace TikTokDownloader
             InitializeComponent();
             BindingContext = this;
         }
+        private bool oneShotPaste = false;
+        protected override void OnSizeAllocated(double width, double height)
+        {
+            base.OnSizeAllocated(width, height);
+            if (!oneShotPaste)
+            {
+                oneShotPaste = true;
+                var text = DependencyService.Get<IClipBoardService>().Get();
+                if (MatchTikTokUrl(text))
+                {
+                    urlEditor.Text = text;
+                    videoURL = text;
+                }
+            }
+        }
 
         private async Task<DownloadData> getContentFromTikTok(string url)
         {
@@ -282,12 +297,17 @@ namespace TikTokDownloader
             return null;
         }
 
+        private bool MatchTikTokUrl(string url)
+        {
+            return Regex.Match(url, "http.://.*tiktok.*/.*").Success;
+        }
+
         private async void Button_ClickedAsync(object sender, EventArgs e)
         {
             (sender as Button).IsEnabled = false;
-            if (!Regex.Match(videoURL, "http.://.*tiktok.*/.*").Success)
+            if (!MatchTikTokUrl(videoURL))
             {
-                await DisplayAlert("Что-то пошло не так", "Вставьте ТикТок ссылку в поле", "OK");
+                DependencyService.Get<IToastService>().MakeText("Вставьте ТикТок ссылку в поле");
                 (sender as Button).IsEnabled = true;
                 return;
             }
@@ -348,7 +368,7 @@ namespace TikTokDownloader
             }
             else
             {
-                await DisplayAlert("Что-то пошло не так", "Попытайтесь снова", "OK");
+                DependencyService.Get<IToastService>().MakeText("Попытайтесь снова");
             }
             (sender as Button).IsEnabled = true;
         }
@@ -357,6 +377,13 @@ namespace TikTokDownloader
         {
             urlEditor.Text = "";
             videoURL = "";
+        }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            var text = DependencyService.Get<IClipBoardService>().Get();
+            urlEditor.Text = text;
+            videoURL = text;
         }
     }
 }
