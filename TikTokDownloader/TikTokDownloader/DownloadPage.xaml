@@ -1,23 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.DownloadPage"
              Title="Download page">
     <ContentPage.Content>
         <StackLayout>
-            <Grid HorizontalOptions="CenterAndExpand" Margin="0, 15, 0, 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="50"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="End" Text="Сохранить в галерею"/>
-                <Switch Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center" IsToggled="{Binding isSaveToDownloads}" OnColor="DarkGray" ThumbColor="#00a6ed"/>
-                <Label Grid.Column="2" VerticalOptions="Center" HorizontalOptions="Start" Text="Сохранить в загрузки"/>
-            </Grid>
+            <StackLayout HorizontalOptions="CenterAndExpand" Padding="10" Margin="0, 15, 0, 0">
+                <StackLayout.Resources>
+                    <ResourceDictionary>
+                        <Array Type="{x:Type tiktokdownloader:TabData}" x:Key="tabs">
+                            <tiktokdownloader:TabData Position="0" Text="Галерея" TextColor="Black"/>
+                            <tiktokdownloader:TabData Position="1" Text="Загрузки" TextColor="Black"/>
+                        </Array>
+                    </ResourceDictionary>
+                </StackLayout.Resources>
+                <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Место сохранения:"/>
+                <tiktokdownloader:TabbedSwitch SelectedIndex="0" Selectors="{StaticResource Key=tabs}" OnSwitch="TabbedSwitch_OnSwitch"/>
+            </StackLayout>
+            
             <ScrollView>
                 <StackLayout Padding="10" Spacing ="10">
-                    <Label Margin="25, 0, 25, 15" Text="{Binding data.video_description}" FontSize="Subtitle" IsVisible="{Binding isHaveDescription}"/>
+                    <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Название"/>
+                    <Label TextColor="Black" Margin="25, 0, 25, 15" Text="{Binding data.video_description}" FontSize="Subtitle" IsVisible="{Binding isHaveDescription}"/>
                     <Frame CornerRadius="15" IsVisible="{Binding isHaveVideos}">
                         <StackLayout>
                             <Label Margin="5, 0, 0, 10" TextColor="Black" Text="Видео" FontSize="Title" />

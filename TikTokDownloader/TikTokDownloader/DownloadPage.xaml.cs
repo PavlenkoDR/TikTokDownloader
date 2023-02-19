@@ -14,7 +14,7 @@ namespace TikTokDownloader
         public string description { get => $"Скачать {_description}"; set => _description = value; }
         public string fileName { get; set; }
     }
-    public struct DownloadData
+    public class DownloadData
     {
         public string video_description { get; set; }
         public List<UrlDescription> video_list { get; set; }
@@ -39,7 +39,7 @@ namespace TikTokDownloader
     {
         public DownloadData data { get; }
         public List<ImageUrlDescription> imageList { get; } = new List<ImageUrlDescription>();
-        public bool isSaveToDownloads { get; set; }
+        public bool isSaveToDownloads { get; set; } = false;
         public bool isHaveVideos { get => data.video_list.Count > 0; }
         public bool isHaveMusic { get => data.music_list.Count > 0; }
         public bool isHaveDescription { get => data.video_description != null && data.video_description.Length > 0; }
@@ -91,6 +91,7 @@ namespace TikTokDownloader
 
         private async void DownloadClicked(object sender, EventArgs e)
         {
+            (sender as Button).IsEnabled = false;
             await Navigation.PushModalAsync(new DownloadBanner());
             var button = sender as Button;
 
@@ -107,6 +108,13 @@ namespace TikTokDownloader
 
             await Navigation.PopModalAsync();
             await DisplayAlert("Успешно!", isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею", "OK");
+
+            (sender as Button).IsEnabled = true;
+        }
+
+        private void TabbedSwitch_OnSwitch(object sender, OnSwitchArgs e)
+        {
+            isSaveToDownloads = e.SelectedIndex == 1;
         }
     }
 }

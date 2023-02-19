@@ -24,7 +24,7 @@ namespace TikTokDownloader
             BindingContext = this;
         }
 
-        private async Task getContentFromTikTok(string url)
+        private async Task<DownloadData> getContentFromTikTok(string url)
         {
             string aweme_id = null;
             {
@@ -34,7 +34,7 @@ namespace TikTokDownloader
                 var response = await client.GetAsync(url, cancellationTokenSource.Token);
                 if (cancellationTokenSource.IsCancellationRequested)
                 {
-                    throw new TimeoutException("Timeout");
+                    return null;
                 }
                 var content = await response.Content.ReadAsStringAsync();
                 var splittedContent = content.Split(new[] { "\"aweme_id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
@@ -46,7 +46,11 @@ namespace TikTokDownloader
             if (aweme_id != null)
             {
                 HttpClient client = new HttpClient();
-                var response = await client.GetAsync($"https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id={aweme_id}&iid=6165993682518218889&device_id=60318820105&aid=1180");
+                HttpRequestMessage request = new HttpRequestMessage();
+                request.RequestUri = new Uri($"https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id={aweme_id}");
+                request.Method = HttpMethod.Get;
+                request.Headers.Add("Accept", "application/json");
+                var response = await client.SendAsync(request);
                 var json = await response.Content.ReadAsStringAsync();
                 var obj = JsonConvert.DeserializeObject<JObject>(json);
                 var aweme_list = obj["aweme_list"] as JArray;
@@ -90,9 +94,10 @@ namespace TikTokDownloader
                         url_video_list.Add(new UrlDescription()
                         {
                             url = play_addr,
-                            description = $"без водяного знака {gear_name}",
+                            description = $"без водяного знака",
                             fileName = $"no_watermark_{gear_name}_{aweme_id}.mp4"
                         });
+                        break;
                     }
                 }
 
@@ -139,7 +144,7 @@ namespace TikTokDownloader
                             });
                         }
                         var user_watermark_image = extractImageUrl(imageObj["user_watermark_image"]["url_list"] as JArray);
-                        if (user_watermark_image != null)
+                        if (owner_watermark_image == null && user_watermark_image != null)
                         {
                             url_user_watermark_image_list.Add(new UrlDescription
                             {
@@ -149,7 +154,7 @@ namespace TikTokDownloader
                             });
                         }
                         var thumbnail = extractImageUrl(imageObj["thumbnail"]["url_list"] as JArray);
-                        if (thumbnail != null)
+                        if (display_image == null && thumbnail != null)
                         {
                             url_thumbnail_list.Add(new UrlDescription
                             {
@@ -161,12 +166,13 @@ namespace TikTokDownloader
                         imageObjIdx++;
                     }
                 }
-                await Navigation.PushAsync(new DownloadPage(new DownloadData
+                return new DownloadData
                 {
                     video_description = desc,
                     video_list = url_video_list,
                     music_description = title,
-                    music_list = url_music_list.Select(x => new UrlDescription {
+                    music_list = url_music_list.Select(x => new UrlDescription
+                    {
                         url = x,
                         fileName = $"music_{aweme_id}.mp3"
                     }).ToList(),
@@ -174,15 +180,12 @@ namespace TikTokDownloader
                     url_owner_watermark_image_list = url_owner_watermark_image_list,
                     url_user_watermark_image_list = url_user_watermark_image_list,
                     url_thumbnail_list = url_thumbnail_list
-                }));
+                };
             }
-            else
-            {
-                throw new Exception("aweme_id not matched");
-            }
+            return null;
         }
 
-        private async Task getContentFromDouyin(string url)
+        private async Task<DownloadData> getContentFromDouyin(string url)
         {
             HttpClient client = new HttpClient();
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -190,7 +193,7 @@ namespace TikTokDownloader
             var response = await client.GetAsync($"https://api.douyin.wtf/api?url={url}&minimal=false", cancellationTokenSource.Token);
             if (cancellationTokenSource.IsCancellationRequested)
             {
-                throw new TimeoutException("Timeout");
+                return null;
             }
             var json = await response.Content.ReadAsStringAsync();
             var obj = JsonConvert.DeserializeObject<JObject>(json);
@@ -199,16 +202,7 @@ namespace TikTokDownloader
 
             if (status == "failed")
             {
-                var message = obj["message"].ToString();
-                var messageSplitted = message.Split('/');
-                if (messageSplitted.Length > 1)
-                {
-                    throw new Exception(messageSplitted[1]);
-                }
-                else
-                {
-                    throw new Exception(message);
-                }
+                return null;
             }
             else if (status == "success")
             {
@@ -239,23 +233,13 @@ namespace TikTokDownloader
 
                     video_list = new List<UrlDescription>{
                         new UrlDescription{
-                            url = wm_video_url,
-                            description = "с водяным знаком",
-                            fileName = $"watermark_{aweme_id}.mp4"
-                        },
-                        new UrlDescription{
                             url = wm_video_url_HQ,
-                            description = "с водяным знаком в высоком качестве",
+                            description = "с водяным знаком",
                             fileName = $"watermark_hq_{aweme_id}.mp4"
                             },
                         new UrlDescription{
-                            url = nwm_video_url,
-                            description = "без водяного знака",
-                            fileName = $"no_watermark_{aweme_id}.mp4"
-                            },
-                        new UrlDescription{
                             url = nwm_video_url_HQ,
-                            description = "без водяного знака в высоком качестве",
+                            description = "без водяного знака",
                             fileName = $"no_watermark_hq_{aweme_id}.mp4"
                             }
                     };
@@ -279,12 +263,13 @@ namespace TikTokDownloader
                     }
                 }
 
-                await Navigation.PushAsync(new DownloadPage(new DownloadData
+                return new DownloadData
                 {
                     video_description = desc,
                     video_list = video_list,
                     music_description = title,
-                    music_list = url_list.Select(x => new UrlDescription { 
+                    music_list = url_list.Select(x => new UrlDescription
+                    {
                         url = x,
                         fileName = $"music_{aweme_id}.mp3"
                     }).ToList(),
@@ -292,59 +277,80 @@ namespace TikTokDownloader
                     url_user_watermark_image_list = watermark_image_list,
                     url_owner_watermark_image_list = new List<UrlDescription>(),
                     url_thumbnail_list = new List<UrlDescription>()
-                }));
+                };
             }
-            else
-            {
-                throw new Exception("Unknown Douyin API status");
-            }
+            return null;
         }
 
         private async void Button_ClickedAsync(object sender, EventArgs e)
         {
+            (sender as Button).IsEnabled = false;
             if (!Regex.Match(videoURL, "http.://.*tiktok.*/.*").Success)
             {
                 await DisplayAlert("Что-то пошло не так", "Вставьте ТикТок ссылку в поле", "OK");
+                (sender as Button).IsEnabled = true;
                 return;
             }
-            bool completed = false;
-            string errors = "";
             var banner = new DownloadBanner();
             await Navigation.PushModalAsync(banner);
-            Func<Func<string, Task>, Task> downloadLauncher = async (Func<string, Task> task) =>
+            CancellationTokenSource cancellationTokenSource = null;
+            int failsCount = 0;
+            Mutex mutex = new Mutex();
+            Func<Func<string, Task<DownloadData>>, Task<DownloadData>> downloadLauncher = async (Func<string, Task<DownloadData>> task) =>
             {
-                if (!completed)
+                var taskResult = await task(videoURL);
+                if (taskResult == null)
                 {
-                    try
+                    mutex.WaitOne();
+                    ++failsCount;
+                    bool canLeave = false;
+                    if (failsCount == 2)
                     {
-                        await task(videoURL);
-                        completed = true;
+                        canLeave = true;
                     }
-                    catch (Exception ex)
+                    mutex.ReleaseMutex();
+                    while (!cancellationTokenSource.IsCancellationRequested && !canLeave)
                     {
-                        errors += $"{ex.Message}\n";
+                        Thread.Yield();
                     }
                 }
+                return taskResult;
             };
 
+            DownloadData result = null;
             for (int i = 1; i < 11; i++)
             {
-                errors = "";
                 banner.tryCount = i;
-                await downloadLauncher(getContentFromTikTok);
-                await downloadLauncher(getContentFromDouyin);
-                if (completed)
+                cancellationTokenSource = new CancellationTokenSource();
+                failsCount = 0;
+                try
+                {
+                    result = await await Task.WhenAny(new[]{
+                        downloadLauncher(getContentFromTikTok),
+                        downloadLauncher(getContentFromDouyin)
+                    });
+                }
+                catch (Exception)
+                {
+                }
+                if (result != null)
                 {
                     break;
                 }
+                cancellationTokenSource.Cancel();
             }
             
             
             await Navigation.PopModalAsync();
-            if (!completed)
+            if (result != null)
             {
-                await DisplayAlert("Что-то пошло не так", errors, "OK");
+                await Navigation.PushAsync(new DownloadPage(result));
             }
+            else
+            {
+                await DisplayAlert("Что-то пошло не так", "Попытайтесь снова", "OK");
+            }
+            (sender as Button).IsEnabled = true;
         }
 
         private void ImageButton_Clicked(object sender, EventArgs e)

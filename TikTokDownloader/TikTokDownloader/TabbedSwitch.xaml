@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
+             x:Class="TikTokDownloader.TabbedSwitch">
+    <ContentView.Content>
+        <Grid Padding="0" ColumnSpacing="0" RowSpacing="0">
+            <BoxView Margin="5, 0, 5, 0" BackgroundColor="{Binding BackgroundColor}" CornerRadius="{Binding CornerRadius}"/>
+            <BoxView x:Name="selectedBackground" BackgroundColor="{Binding ThumbColor}" CornerRadius="{Binding CornerRadius}" TranslationX="5" HorizontalOptions="Start" VerticalOptions="FillAndExpand"/>
+            <Grid x:Name="selectorGrid" BindableLayout.ItemsSource="{Binding Selectors}" Padding="5">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Grid.Column="{Binding Position}" ColumnSpacing="0">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                            </Grid.GestureRecognizers>
+                            <Label Text="{Binding Text}" TextColor="{Binding TextColor}" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </Grid>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

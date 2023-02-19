@@ -1,1 +1,8 @@
 /.vs/*
+/TikTokDownloader/TikTokDownloader.Android/bin/
+/TikTokDownloader/TikTokDownloader.Android/obj/
+/TikTokDownloader/TikTokDownloader.iOS/bin/
+/TikTokDownloader/TikTokDownloader.iOS/obj/
+/TikTokDownloader/TikTokDownloader/bin/
+/TikTokDownloader/TikTokDownloader/obj/
+/TikTokDownloader/TikTokDownloader/Properties/PublishProfiles
