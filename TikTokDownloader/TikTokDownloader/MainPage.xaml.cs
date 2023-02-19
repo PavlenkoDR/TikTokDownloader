@@ -342,6 +342,7 @@ namespace TikTokDownloader
             {
                 banner.tryCount = i;
                 cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.CancelAfter(15000);
                 failsCount = 0;
                 try
                 {

@@ -7,12 +7,13 @@ using Xamarin.Forms.Xaml;
 
 namespace TikTokDownloader
 {
-    public struct UrlDescription
+    public class UrlDescription
     {
         public string url { get; set; }
         private string _description;
         public string description { get => $"Скачать {_description}"; set => _description = value; }
         public string fileName { get; set; }
+        public string shareFilesPath { get; set; } = null;
     }
     public class DownloadData
     {
@@ -78,7 +79,8 @@ namespace TikTokDownloader
             var client = new HttpClient();
             var uri = new Uri(downloadInfo.url);
             var downloadBytes = await client.GetByteArrayAsync(uri);
-            await DependencyService.Get<IFileService>().Save(downloadBytes, downloadInfo.fileName, isSaveToDownloads);
+            var result = await DependencyService.Get<IFileService>().Save(downloadBytes, downloadInfo.fileName, isSaveToDownloads);
+            downloadInfo.shareFilesPath = result;
         }
 
         private async Task DownloadAndSave(List<UrlDescription> downloadInfo)
@@ -91,9 +93,9 @@ namespace TikTokDownloader
 
         private async void DownloadClicked(object sender, EventArgs e)
         {
-            (sender as Button).IsEnabled = false;
-            await Navigation.PushModalAsync(new DownloadBanner());
             var button = sender as Button;
+            button.IsEnabled = false;
+            await Navigation.PushModalAsync(new DownloadBanner());
 
             if (button.CommandParameter is UrlDescription)
             {
@@ -108,13 +110,92 @@ namespace TikTokDownloader
 
             await Navigation.PopModalAsync();
             DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
-
-            (sender as Button).IsEnabled = true;
+            button.BackgroundColor = Color.LightGreen;
+            button.Text = "Поделиться";
+            button.Clicked -= DownloadClicked;
+            button.Clicked += Share_Clicked;
+            button.IsEnabled = true;
         }
 
         private void TabbedSwitch_OnSwitch(object sender, OnSwitchArgs e)
         {
             isSaveToDownloads = e.SelectedIndex == 1;
+        }
+
+        private string getIntentType(UrlDescription description)
+        {
+            string intentType = "";
+            if (data.video_list.Contains(description))
+            {
+                intentType = "video/mp4";
+            }
+            else if (data.music_list.Contains(description))
+            {
+                intentType = "music/mp3";
+            }
+            else if (data.url_display_image_list.Contains(description))
+            {
+                intentType = "image/jpg";
+            }
+            else if (data.url_owner_watermark_image_list.Contains(description))
+            {
+                intentType = "image/jpg";
+            }
+            else if (data.url_user_watermark_image_list.Contains(description))
+            {
+                intentType = "image/jpg";
+            }
+            else if (data.url_thumbnail_list.Contains(description))
+            {
+                intentType = "image/jpg";
+            }
+            return intentType;
+        }
+
+        private void Share_Clicked(object sender, EventArgs e)
+        {
+            var button = sender as Button;
+            button.IsEnabled = false;
+
+            if (button.CommandParameter is UrlDescription)
+            {
+                var downloadInfo = (UrlDescription)button?.CommandParameter;
+                if (downloadInfo.shareFilesPath == null)
+                {
+                    DependencyService.Get<IToastService>().MakeText("Файл не найден");
+                    button.IsEnabled = true;
+                    return;
+                }
+                List<string> filePaths = new List<string>();
+                filePaths.Add(downloadInfo.shareFilesPath);
+
+                string intentType = getIntentType(downloadInfo);
+                DependencyService.Get<IFileService>().ShareMediaFile(filePaths.ToArray(), intentType);
+            }
+            else if (button.CommandParameter is List<UrlDescription>)
+            {
+                var downloadInfos = (List<UrlDescription>)button?.CommandParameter;
+                List<string> filePaths = new List<string>();
+                string intentType = "";
+                foreach (var downloadInfo in downloadInfos)
+                {
+                    if (downloadInfo.shareFilesPath == null)
+                    {
+                        DependencyService.Get<IToastService>().MakeText("Файлы не найдены");
+                        button.IsEnabled = true;
+                        return;
+                    }
+                    if (intentType.Length == 0)
+                    {
+                        intentType = getIntentType(downloadInfo);
+                    }
+                    filePaths.Add(downloadInfo.shareFilesPath);
+                }
+
+                DependencyService.Get<IFileService>().ShareMediaFile(filePaths.ToArray(), intentType);
+            }
+
+            button.IsEnabled = true;
         }
     }
 }
