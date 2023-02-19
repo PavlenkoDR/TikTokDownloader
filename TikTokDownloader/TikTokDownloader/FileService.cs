@@ -4,6 +4,7 @@ namespace TikTokDownloader
 {
     public interface IFileService
     {
-        Task Save(byte[] data, string name, bool isSaveToDownloads);
+        Task<string> Save(byte[] data, string name, bool isSaveToDownloads);
+        void ShareMediaFile(string[] filesPath, string intentType);
     }
 }

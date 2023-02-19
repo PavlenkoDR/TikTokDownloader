@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Android.Content;
 using Android.Widget;
+using System.Collections.Generic;
 
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FileService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ClipBoardService))]
@@ -24,6 +25,10 @@ namespace TikTokDownloader.Droid
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
+            
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.SetVmPolicy(builder.Build());
+            builder.DetectFileUriExposure();
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -34,48 +39,136 @@ namespace TikTokDownloader.Droid
     }
     public class FileService : IFileService
     {
-        public async Task Save(byte[] data, string name, bool isSaveToDownloads)
+        public async Task<bool> CheckPermissions()
         {
-            if (await Permissions.CheckStatusAsync<Permissions.StorageWrite>() == PermissionStatus.Granted ||
-                await Permissions.RequestAsync<Permissions.StorageWrite>() == PermissionStatus.Granted)
+            if (await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted ||
+                await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
             {
-                if (await Permissions.CheckStatusAsync<Permissions.StorageRead>() == PermissionStatus.Granted ||
-                    await Permissions.RequestAsync<Permissions.StorageRead>() == PermissionStatus.Granted)
+                return false;
+            }
+            if (await Permissions.CheckStatusAsync<Permissions.StorageRead>() != PermissionStatus.Granted ||
+                await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted)
+            {
+                return false;
+            }
+            if (await Permissions.CheckStatusAsync<Permissions.Media>() != PermissionStatus.Granted ||
+                await Permissions.RequestAsync<Permissions.Media>() != PermissionStatus.Granted)
+            {
+                return false;
+            }
+            return true;
+        }
+        public async Task<string> getGalleryPath()
+        {
+            string path = null;
+            if (await CheckPermissions())
+            {
+                if (Environment.IsExternalStorageEmulated)
                 {
-                    if (await Permissions.CheckStatusAsync<Permissions.Media>() == PermissionStatus.Granted ||
-                        await Permissions.RequestAsync<Permissions.Media>() == PermissionStatus.Granted)
-                    {
-                        string path;
-                        if (Environment.IsExternalStorageEmulated)
-                        {
-                            //(Android.OS.Environment.DirectoryDownloads)
-                            if (isSaveToDownloads)
-                            {
-                                path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDownloads).AbsolutePath;
-                            }
-                            else
-                            {
-                                path = Path.Combine(Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDcim).AbsolutePath, "Camera");
-                            }
-                        }
-                        else
-                        {
-                            path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-                        }
-                        string filePath = Path.Combine(path, name);
-                        FileOutputStream fileOutputStream = new FileOutputStream(new Java.IO.File(filePath));
-                        fileOutputStream.Write(data);
-                        fileOutputStream.Close();
-                    }
+                    path = Path.Combine(Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDcim).AbsolutePath, "Camera");
                 }
+                else
+                {
+                    path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+                }
+            }
+            return path;
+        }
+        public async Task<string> getDownloadsPath()
+        {
+            string path = null;
+            if (await CheckPermissions())
+            {
+                if (Environment.IsExternalStorageEmulated)
+                {
+                    path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDownloads).AbsolutePath;
+                }
+                else
+                {
+                    path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+                }
+            }
+            return path;
+        }
+        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads)
+        {
+            if (await CheckPermissions())
+            { 
+                string path = isSaveToDownloads ? await getDownloadsPath() : await getGalleryPath();
+                
+                string filePath = Path.Combine(path, name);
+                FileOutputStream fileOutputStream = new FileOutputStream(new Java.IO.File(filePath));
+                fileOutputStream.Write(data);
+                fileOutputStream.Close();
+
+                var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
+                mediaScanIntent.SetData(Android.Net.Uri.FromFile(new Java.IO.File(filePath)));
+                Application.Context.SendBroadcast(mediaScanIntent);
+                return filePath;
+            }
+            return null;
+        }
+        public void ShareMediaFile(string[] filesPath, string intentType)
+        {
+            // File Share
+            //var request = new ShareFileRequest
+            //{
+            //    Title = name,
+            //    File = new ShareFile(filePath)
+            //};
+            //await Share.RequestAsync(request);
+
+            // Action View
+            //Java.IO.File file = new Java.IO.File(filePath);
+            //Intent intent = new Intent();
+            //intent.AddFlags(ActivityFlags.NewTask);
+            //intent.SetAction(Intent.ActionView);
+            //intent.SetDataAndType(Android.Net.Uri.FromFile(file), "video/mp4");
+            //Xamarin.Forms.Forms.Context.StartActivity(Intent.CreateChooser(intent, "Поделиться видео"));
+
+            if (filesPath.Length == 1)
+            {
+                // Media Share one file
+                var file = new Java.IO.File(filesPath[0]);
+                var uri = Android.Net.Uri.FromFile(file);
+
+                var intent = new Intent(Intent.ActionSend);
+                intent.SetType(intentType);
+                intent.SetFlags(ActivityFlags.GrantReadUriPermission);
+                intent.PutExtra(Intent.ExtraStream, uri);
+
+                var chooserIntent = Intent.CreateChooser(intent, "Поделиться файлом");
+                chooserIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
+                Platform.AppContext.StartActivity(chooserIntent);
+            }
+            else
+            {
+                // Media Share
+
+                var intent = new Intent(Intent.ActionSendMultiple);
+                if (intentType != null && intentType.Length > 0)
+                {
+                    intent.SetType(intentType);
+                }
+                intent.SetFlags(ActivityFlags.GrantReadUriPermission);
+                var uris = new List<IParcelable>();
+                foreach (var filePath in filesPath)
+                {
+                    var file = new Java.IO.File(filePath);
+                    var uri = Android.Net.Uri.FromFile(file);
+                    uris.Add(uri);
+                }
+                intent.PutParcelableArrayListExtra(Intent.ExtraStream, uris);
+
+                var chooserIntent = Intent.CreateChooser(intent, "Поделиться файлом");
+                chooserIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
+                Platform.AppContext.StartActivity(chooserIntent);
             }
         }
     }
 
     public class ClipBoardService : IClipBoardService
     {
-        public event System.EventHandler PrimaryClipChanged;
-
         public void Set(string text)
         {
             var clipboardManager = (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
@@ -97,7 +190,8 @@ namespace TikTokDownloader.Droid
 
         public void AddPrimaryClipChanged(System.EventHandler handler)
         {
-            PrimaryClipChanged += handler;
+            var clipboardManager = (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
+            clipboardManager.PrimaryClipChanged += handler;
         }
     }
 
