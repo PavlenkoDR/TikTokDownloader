@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.DownloadPage"
-             Title="Download page">
+             Title="Download page"
+             BackgroundColor="White">
     <ContentPage.Content>
         <StackLayout>
             <StackLayout HorizontalOptions="CenterAndExpand" Padding="10" Margin="0, 15, 0, 0">
@@ -14,8 +15,8 @@
                         </Array>
                     </ResourceDictionary>
                 </StackLayout.Resources>
-                <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Место сохранения:"/>
-                <tiktokdownloader:TabbedSwitch SelectedIndex="0" Selectors="{StaticResource Key=tabs}" OnSwitch="TabbedSwitch_OnSwitch"/>
+                <Label TextColor="Black" Margin="25, 0, 25, 15" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Место сохранения:"/>
+                <tiktokdownloader:TabbedSwitch Margin="20, 0, 20, 0" SelectedIndex="0" Selectors="{StaticResource Key=tabs}" OnSwitch="TabbedSwitch_OnSwitch"/>
             </StackLayout>
             
             <ScrollView>
@@ -29,7 +30,7 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
+                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" TextColor="Black" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -43,7 +44,7 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" Clicked="DownloadClicked" CommandParameter="{Binding downloadInfo}"/>
+                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" TextColor="Black" Clicked="DownloadClicked" CommandParameter="{Binding downloadInfo}"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -58,7 +59,7 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
+                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" TextColor="Black" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>

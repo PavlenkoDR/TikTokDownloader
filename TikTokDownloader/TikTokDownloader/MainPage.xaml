@@ -36,7 +36,7 @@
             <Grid>
                 <Frame Padding="10, 0, 5, 0" CornerRadius="15" BackgroundColor="#eaeaea">
                     <Grid>
-                        <Editor TextColor="Black" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges" Margin="0, 0, 30, 0"/>
+                        <Editor TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges" Margin="0, 0, 30, 0"/>
                         <BoxView BackgroundColor="#eaeaea" HeightRequest="11" VerticalOptions="End"/>
                     </Grid>
                 </Frame>
