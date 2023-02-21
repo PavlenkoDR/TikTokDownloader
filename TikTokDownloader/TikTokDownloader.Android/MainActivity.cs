@@ -95,7 +95,10 @@ namespace TikTokDownloader.Droid
             if (await CheckPermissions())
             { 
                 string path = isSaveToDownloads ? await getDownloadsPath() : await getGalleryPath();
-                
+                if (!System.IO.File.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
                 string filePath = Path.Combine(path, name);
                 FileOutputStream fileOutputStream = new FileOutputStream(new Java.IO.File(filePath));
                 fileOutputStream.Write(data);
@@ -108,7 +111,7 @@ namespace TikTokDownloader.Droid
             }
             return null;
         }
-        public void ShareMediaFile(string[] filesPath, string intentType)
+        public void ShareMediaFile(string title, string[] filesPath, string intentType)
         {
             // File Share
             //var request = new ShareFileRequest
@@ -136,6 +139,7 @@ namespace TikTokDownloader.Droid
                 intent.SetType(intentType);
                 intent.SetFlags(ActivityFlags.GrantReadUriPermission);
                 intent.PutExtra(Intent.ExtraStream, uri);
+                intent.PutExtra(Intent.ExtraTitle, title);
 
                 var chooserIntent = Intent.CreateChooser(intent, "Поделиться файлом");
                 chooserIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
@@ -159,8 +163,9 @@ namespace TikTokDownloader.Droid
                     uris.Add(uri);
                 }
                 intent.PutParcelableArrayListExtra(Intent.ExtraStream, uris);
+                intent.PutExtra(Intent.ExtraTitle, title);
 
-                var chooserIntent = Intent.CreateChooser(intent, "Поделиться файлом");
+                var chooserIntent = Intent.CreateChooser(intent, title);
                 chooserIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
                 Platform.AppContext.StartActivity(chooserIntent);
             }

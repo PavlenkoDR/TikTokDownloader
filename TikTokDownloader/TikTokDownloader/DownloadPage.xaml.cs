@@ -152,6 +152,16 @@ namespace TikTokDownloader
             return intentType;
         }
 
+        private string getIntentTitle(UrlDescription description)
+        {
+            string title = data.video_description;
+            if (data.music_list.Contains(description))
+            {
+                title = data.music_description;
+            }
+            return title;
+        }
+
         private void Share_Clicked(object sender, EventArgs e)
         {
             var button = sender as Button;
@@ -170,13 +180,15 @@ namespace TikTokDownloader
                 filePaths.Add(downloadInfo.shareFilesPath);
 
                 string intentType = getIntentType(downloadInfo);
-                DependencyService.Get<IFileService>().ShareMediaFile(filePaths.ToArray(), intentType);
+                string intentTitle = getIntentTitle(downloadInfo);
+                DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
             }
             else if (button.CommandParameter is List<UrlDescription>)
             {
                 var downloadInfos = (List<UrlDescription>)button?.CommandParameter;
                 List<string> filePaths = new List<string>();
                 string intentType = "";
+                string intentTitle = "";
                 foreach (var downloadInfo in downloadInfos)
                 {
                     if (downloadInfo.shareFilesPath == null)
@@ -189,10 +201,14 @@ namespace TikTokDownloader
                     {
                         intentType = getIntentType(downloadInfo);
                     }
+                    if (intentTitle.Length == 0)
+                    {
+                        intentTitle = getIntentTitle(downloadInfo);
+                    }
                     filePaths.Add(downloadInfo.shareFilesPath);
                 }
 
-                DependencyService.Get<IFileService>().ShareMediaFile(filePaths.ToArray(), intentType);
+                DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
             }
 
             button.IsEnabled = true;

@@ -2,11 +2,11 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.DownloadPage"
-             Title="Download page"
+             Title=""
              BackgroundColor="White">
     <ContentPage.Content>
         <StackLayout>
-            <StackLayout HorizontalOptions="CenterAndExpand" Padding="10" Margin="0, 15, 0, 0">
+            <StackLayout HorizontalOptions="CenterAndExpand" Padding="10" Margin="0, 15, 0, 0" MinimumHeightRequest="80">
                 <StackLayout.Resources>
                     <ResourceDictionary>
                         <Array Type="{x:Type tiktokdownloader:TabData}" x:Key="tabs">
@@ -16,7 +16,7 @@
                     </ResourceDictionary>
                 </StackLayout.Resources>
                 <Label TextColor="Black" Margin="25, 0, 25, 15" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Место сохранения:"/>
-                <tiktokdownloader:TabbedSwitch Margin="20, 0, 20, 0" SelectedIndex="0" Selectors="{StaticResource Key=tabs}" OnSwitch="TabbedSwitch_OnSwitch"/>
+                <tiktokdownloader:TabbedSwitch Selectors="{StaticResource Key=tabs}" Margin="20, 0, 20, 0" SelectedIndex="0"  OnSwitch="TabbedSwitch_OnSwitch"/>
             </StackLayout>
             
             <ScrollView>
