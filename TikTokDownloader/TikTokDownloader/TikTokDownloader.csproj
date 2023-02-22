@@ -12,12 +12,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\history-icon.png" />
+    <None Remove="Assets\home-icon.png" />
     <None Remove="Assets\link.jpg" />
     <None Remove="Assets\share.jpg" />
     <None Remove="Assets\shareFile.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\history-icon.png" />
+    <EmbeddedResource Include="Assets\home-icon.png" />
     <EmbeddedResource Include="Assets\link.jpg" />
     <EmbeddedResource Include="Assets\share.jpg" />
   </ItemGroup>
@@ -36,6 +40,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="DownloadPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="MainTabbedPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="TabbedSwitch.xaml">

@@ -87,6 +87,8 @@ namespace TikTokDownloader
                 }
 
                 List<UrlDescription> url_video_list = new List<UrlDescription>();
+                string dynamic_cover_description = null;
+                string cover_description = null;
                 var video = target_aweme["video"];
                 if (video != null)
                 {
@@ -113,6 +115,47 @@ namespace TikTokDownloader
                             fileName = $"no_watermark_{gear_name}_{aweme_id}.mp4"
                         });
                         break;
+                    }
+                    var cover_data = video;
+                    if (cover_data != null)
+                    {
+                        {
+                            var cover = cover_data["dynamic_cover"];
+                            if (cover != null)
+                            {
+                                var url_list = cover["url_list"];
+                                foreach (var cover_url in url_list as JArray)
+                                {
+                                    dynamic_cover_description = cover_url.ToString();
+                                    break;
+                                }
+                            }
+                        }
+                        {
+                            var cover = cover_data["origin_cover"];
+                            if (cover != null)
+                            {
+                                var url_list = cover["url_list"];
+                                foreach (var cover_url in url_list as JArray)
+                                {
+                                    cover_description = cover_url.ToString();
+                                    break;
+                                }
+                            }
+                        }
+                        if (cover_description != null)
+                        {
+                            var cover = cover_data["cover"];
+                            if (cover != null)
+                            {
+                                var url_list = cover["url_list"];
+                                foreach (var cover_url in url_list as JArray)
+                                {
+                                    cover_description = cover_url.ToString();
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -183,6 +226,8 @@ namespace TikTokDownloader
                 }
                 return new DownloadData
                 {
+                    dynamic_cover = dynamic_cover_description,
+                    cover = cover_description,
                     video_description = desc,
                     video_list = url_video_list,
                     music_description = title,
@@ -224,16 +269,16 @@ namespace TikTokDownloader
                 var aweme_id = obj["aweme_id"].ToString();
                 var desc = obj["desc"].ToString();
 
-                SortedSet<string> url_list = new SortedSet<string>();
+                SortedSet<string> music_url_list = new SortedSet<string>();
                 var title = "";
                 var music = obj["music"];
                 if (music != null)
                 {
                     title = music["title"].ToString();
-                    url_list.Add(music["play_url"]["uri"].ToString());
+                    music_url_list.Add(music["play_url"]["uri"].ToString());
                     foreach (var play_url in music["play_url"]["url_list"] as JArray)
                     {
-                        url_list.Add(play_url.ToString());
+                        music_url_list.Add(play_url.ToString());
                     }
                 }
 
@@ -278,12 +323,58 @@ namespace TikTokDownloader
                     }
                 }
 
+                string dynamic_cover_description = null;
+                string cover_description = null;
+                var cover_data = obj["cover_data"];
+                if (cover_data != null)
+                {
+                    {
+                        var cover = cover_data["dynamic_cover"];
+                        if (cover != null)
+                        {
+                            var url_list = cover["url_list"];
+                            foreach (var cover_url in url_list as JArray)
+                            {
+                                dynamic_cover_description = cover_url.ToString();
+                                break;
+                            }
+                        }
+                    }
+                    {
+                        var cover = cover_data["origin_cover"];
+                        if (cover != null)
+                        {
+                            var url_list = cover["url_list"];
+                            foreach (var cover_url in url_list as JArray)
+                            {
+                                cover_description = cover_url.ToString();
+                                break;
+                            }
+                        }
+                    }
+                    if (cover_description != null)
+                    {
+                        var cover = cover_data["cover"];
+                        if (cover != null)
+                        {
+                            var url_list = cover["url_list"];
+                            foreach (var cover_url in url_list as JArray)
+                            {
+                                cover_description = cover_url.ToString();
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 return new DownloadData
                 {
+                    dynamic_cover = dynamic_cover_description,
+                    cover = cover_description,
                     video_description = desc,
                     video_list = video_list,
                     music_description = title,
-                    music_list = url_list.Select(x => new UrlDescription
+                    music_list = music_url_list.Select(x => new UrlDescription
                     {
                         url = x,
                         fileName = $"music_{aweme_id}.mp3"

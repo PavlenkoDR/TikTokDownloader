@@ -61,42 +61,60 @@ namespace TikTokDownloader
             }
         }
         public List<TabData> _Selectors = new List<TabData>();
+
+        public static readonly BindableProperty SelectedIndexProperty = BindableProperty.Create(
+            "SelectedIndex",
+            typeof(int),
+            typeof(TabbedSwitch),
+            defaultBindingMode: BindingMode.OneWayToSource
+        );
+
         public int SelectedIndex
         {
-            get => _SelectedIndex;
+            get
+            {
+                return int.Parse(GetValue(SelectedIndexProperty).ToString());
+            }
             set
             {
-                _SelectedIndex = value;
+                SetValue(SelectedIndexProperty, value);
                 OnPropertyChanged("SelectedIndex");
             }
         }
-        public int _SelectedIndex = -1;
         public delegate void OnSwitchHandler(object sender, OnSwitchArgs e);
         public event OnSwitchHandler OnSwitch;
         public TabbedSwitch()
         {
-            BindingContext = this;
             InitializeComponent();
         }
-        protected override void OnSizeAllocated(double width, double height)
+        private void SetSelectedBackgroundTransform()
         {
-            base.OnSizeAllocated(width, height);
-            if (selectorGrid.Children.Count > 0)
+            if (SelectedIndex < selectorGrid.Children.Count())
             {
-                selectedBackground.WidthRequest = selectorGrid.Children[0].Width;
+                selectedBackground.WidthRequest = (selectorGrid.Children[SelectedIndex] as Grid).Width;
+                selectedBackground.TranslationX = (selectorGrid.Children[SelectedIndex] as Grid).X;
+            }
+            else if (selectorGrid.Children.Count > 0)
+            {
                 SelectedIndex = 0;
+                selectedBackground.WidthRequest = selectorGrid.Children[0].Width;
             }
             else
             {
                 selectedBackground.WidthRequest = selectorGrid.Width;
             }
         }
+        protected override void OnSizeAllocated(double width, double height)
+        {
+            base.OnSizeAllocated(width, height);
+            SetSelectedBackgroundTransform();
+        }
         private void TapGestureRecognizer_Tapped(object sender, EventArgs e)
         {
             selectedBackground.WidthRequest = (sender as Grid).Width;
             selectedBackground.TranslateTo((sender as Grid).X, 0.0);
             SelectedIndex = selectorGrid.Children.IndexOf(sender as Grid);
-            OnSwitch.Invoke(this, new OnSwitchArgs() { SelectedIndex = SelectedIndex });
+            OnSwitch?.Invoke(this, new OnSwitchArgs() { SelectedIndex = SelectedIndex });
         }
     }
 }

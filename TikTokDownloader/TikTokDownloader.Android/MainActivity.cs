@@ -5,10 +5,10 @@ using Android.OS;
 using Java.IO;
 using Xamarin.Essentials;
 using System.Threading.Tasks;
-using System.IO;
 using Android.Content;
 using Android.Widget;
 using System.Collections.Generic;
+using System.IO;
 
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FileService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ClipBoardService))]
@@ -95,9 +95,12 @@ namespace TikTokDownloader.Droid
             if (await CheckPermissions())
             { 
                 string path = isSaveToDownloads ? await getDownloadsPath() : await getGalleryPath();
-                if (!System.IO.File.Exists(path))
                 {
-                    Directory.CreateDirectory(path);
+                    var pathDir = new Java.IO.File(path);
+                    if (!pathDir.Exists())
+                    {
+                        pathDir.Mkdir();
+                    }
                 }
                 string filePath = Path.Combine(path, name);
                 FileOutputStream fileOutputStream = new FileOutputStream(new Java.IO.File(filePath));

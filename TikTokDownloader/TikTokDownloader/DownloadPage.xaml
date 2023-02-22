@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.DownloadPage"
              Title=""
              BackgroundColor="White">
@@ -16,13 +17,18 @@
                     </ResourceDictionary>
                 </StackLayout.Resources>
                 <Label TextColor="Black" Margin="25, 0, 25, 15" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Место сохранения:"/>
-                <tiktokdownloader:TabbedSwitch Selectors="{StaticResource Key=tabs}" Margin="20, 0, 20, 0" SelectedIndex="0"  OnSwitch="TabbedSwitch_OnSwitch"/>
+                <tiktokdownloader:TabbedSwitch Selectors="{StaticResource Key=tabs}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Margin="20, 0, 20, 0"/>
             </StackLayout>
             
             <ScrollView>
                 <StackLayout Padding="10" Spacing ="10">
                     <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Название"/>
-                    <Label TextColor="Black" Margin="25, 0, 25, 15" Text="{Binding data.video_description}" FontSize="Subtitle" IsVisible="{Binding isHaveDescription}"/>
+                    <Frame CornerRadius="15">
+                        <StackLayout Orientation="Horizontal">
+                            <Image Source="{Binding data.dynamic_cover}" HorizontalOptions="Center" VerticalOptions="Center" HeightRequest="100" WidthRequest="100" Aspect="AspectFill"/>
+                            <Label Text="{Binding data.video_description}" IsVisible="{Binding isHaveDescription}" TextColor="Black" Margin="25, 0, 25, 15" FontSize="Subtitle"/>
+                        </StackLayout>
+                    </Frame>
                     <Frame CornerRadius="15" IsVisible="{Binding isHaveVideos}">
                         <StackLayout>
                             <Label Margin="5, 0, 0, 10" TextColor="Black" Text="Видео" FontSize="Title" />
@@ -30,7 +36,7 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" TextColor="Black" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
+                                            <tiktokdownloader:DownloadButton NotDownloadedDescription="{Binding description}" UrlDescription="{Binding}" FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" NotDownloadedColor="#afbdff" DownloadedColor="LightGreen" DownloadedDescription="Поделиться" TextColor="Black" Clicked="DownloadClicked"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -44,7 +50,7 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" TextColor="Black" Clicked="DownloadClicked" CommandParameter="{Binding downloadInfo}"/>
+                                            <tiktokdownloader:DownloadButton NotDownloadedDescription="{Binding description}" UrlDescriptions="{Binding downloadInfo}" FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" NotDownloadedColor="#afbdff" DownloadedColor="LightGreen" DownloadedDescription="Поделиться" TextColor="Black" Clicked="DownloadClicked"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -59,7 +65,7 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <Button FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" BackgroundColor="#afbdff" Text="{Binding description}" TextColor="Black" Clicked="DownloadClicked" CommandParameter="{Binding}"/>
+                                            <tiktokdownloader:DownloadButton NotDownloadedDescription="{Binding description}" UrlDescription="{Binding}" FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" NotDownloadedColor="#afbdff" DownloadedColor="LightGreen" DownloadedDescription="Поделиться" TextColor="Black" Clicked="DownloadClicked"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>

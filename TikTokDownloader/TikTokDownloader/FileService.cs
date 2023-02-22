@@ -6,5 +6,7 @@ namespace TikTokDownloader
     {
         Task<string> Save(byte[] data, string name, bool isSaveToDownloads);
         void ShareMediaFile(string title, string[] filesPath, string intentType);
+        Task<string> getGalleryPath();
+        Task<string> getDownloadsPath();
     }
 }

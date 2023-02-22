@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using static Xamarin.Forms.BindableProperty;
 
 namespace TikTokDownloader
 {
@@ -18,6 +20,8 @@ namespace TikTokDownloader
     public class DownloadData
     {
         public string video_description { get; set; }
+        public string dynamic_cover { get; set; }
+        public string cover { get; set; }
         public List<UrlDescription> video_list { get; set; }
 
         public string music_description { get; set; }
@@ -35,20 +39,179 @@ namespace TikTokDownloader
         public List<UrlDescription> downloadInfo { get; set; }
     }
 
+    public class DownloadButton : Button
+    {
+        public static readonly BindableProperty UrlDescriptionProperty = Create(
+            "UrlDescription",
+            typeof(object),
+            typeof(DownloadButton)
+        );
+        public static readonly BindableProperty UrlDescriptionsProperty = Create(
+            "UrlDescriptions",
+            typeof(object),
+            typeof(DownloadButton)
+        );
+        public static readonly BindableProperty NotDownloadedDescriptionProperty = Create(
+            "NotDownloadedDescription",
+            typeof(string),
+            typeof(DownloadButton)
+        );
+
+        public UrlDescription UrlDescription
+        {
+            get
+            {
+                return GetValue(UrlDescriptionProperty) as UrlDescription;
+            }
+            set
+            {
+                SetValue(UrlDescriptionProperty, value);
+                OnPropertyChanged("UrlDescription");
+            }
+        }
+        public List<UrlDescription> UrlDescriptions
+        {
+            get
+            {
+                return GetValue(UrlDescriptionsProperty) as List<UrlDescription>;
+            }
+            set
+            {
+                SetValue(UrlDescriptionsProperty, value);
+                OnPropertyChanged("UrlDescriptions");
+            }
+        }
+        private Color? _DownloadedColor;
+        public Color DownloadedColor {
+            get => _DownloadedColor.Value;
+            set
+            {
+                _DownloadedColor = value;
+                OnPropertyChanged("DownloadedColor");
+            }
+        }
+        private Color? _NotDownloadedColor;
+        public Color NotDownloadedColor
+        {
+            get => _NotDownloadedColor.Value;
+            set
+            {
+                _NotDownloadedColor = value;
+                OnPropertyChanged("NotDownloadedColor");
+            }
+        }
+        public string DownloadedDescription { get; set; } = null;
+        public string NotDownloadedDescription
+        {
+            get
+            {
+                return GetValue(NotDownloadedDescriptionProperty) as string;
+            }
+            set
+            {
+                SetValue(NotDownloadedDescriptionProperty, value);
+                OnPropertyChanged("NotDownloadedDescription");
+            }
+        }
+
+        public bool isDownloaded { get; private set; } = true;
+        public async void checkIsDownloaded()
+        {
+            isDownloaded = true;
+            var fileService = DependencyService.Get<IFileService>();
+            var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath() };
+
+            if (UrlDescription != null)
+            {
+                bool findedInPath = false;
+                foreach (var path in paths)
+                {
+                    var filePath = Path.Combine(path, UrlDescription.fileName);
+                    if (!File.Exists(filePath))
+                    {
+                        continue;
+                    }
+                    findedInPath = true;
+                    UrlDescription.shareFilesPath = filePath;
+                    break;
+                }
+                isDownloaded = findedInPath;
+            }
+            else if (UrlDescriptions != null)
+            {
+                foreach (var downloadInfo in UrlDescriptions)
+                {
+                    bool findedInPath = false;
+                    foreach (var path in paths)
+                    {
+                        var filePath = Path.Combine(path, downloadInfo.fileName);
+                        if (!File.Exists(filePath))
+                        {
+                            continue;
+                        }
+                        findedInPath = true;
+                        downloadInfo.shareFilesPath = filePath;
+                        break;
+                    }
+                    isDownloaded = findedInPath;
+                }
+            }
+            if (isDownloaded)
+            {
+                BackgroundColor = _DownloadedColor ?? BackgroundColor;
+                Text = DownloadedDescription ?? Text;
+            }
+            else
+            {
+                BackgroundColor = _NotDownloadedColor ?? BackgroundColor;
+                Text = NotDownloadedDescription ?? Text;
+            }
+            OnPropertyChanged("BackgroundColor");
+            OnPropertyChanged("Text");
+        }
+
+        protected override void OnPropertyChanged(string propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+            if (propertyName == "UrlDescription")
+            {
+                checkIsDownloaded();
+            }
+            if (propertyName == "UrlDescriptions")
+            {
+                checkIsDownloaded();
+            }
+        }
+        public DownloadButton() : base()
+        {
+        }
+    }
+
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class DownloadPage : ContentPage
     {
         public DownloadData data { get; }
         public List<ImageUrlDescription> imageList { get; } = new List<ImageUrlDescription>();
-        public bool isSaveToDownloads { get; set; } = false;
+        public static bool isSaveToDownloads { get; set; } = false;
+
+        public int SelectedIndex
+        {
+            get
+            {
+                return isSaveToDownloads ? 1 : 0;
+            }
+            set
+            {
+                isSaveToDownloads = value == 1;
+            }
+        }
         public bool isHaveVideos { get => data.video_list.Count > 0; }
         public bool isHaveMusic { get => data.music_list.Count > 0; }
         public bool isHaveDescription { get => data.video_description != null && data.video_description.Length > 0; }
         public bool isHaveImages { get => imageList.Count > 0; }
         public DownloadPage(DownloadData data)
         {
-            InitializeComponent();
-
+            isSaveToDownloads = false;
             this.data = data;
 
             if (data.url_display_image_list.Count > 0)
@@ -70,7 +233,9 @@ namespace TikTokDownloader
             {
                 imageList.Add(new ImageUrlDescription { description = "Скачать миниатюру без водяного знака", downloadInfo = data.url_thumbnail_list });
             }
-
+            
+            InitializeComponent();
+            
             BindingContext = this;
         }
 
@@ -93,33 +258,73 @@ namespace TikTokDownloader
 
         private async void DownloadClicked(object sender, EventArgs e)
         {
-            var button = sender as Button;
+            var button = sender as DownloadButton;
             button.IsEnabled = false;
-            await Navigation.PushModalAsync(new DownloadBanner());
-
-            if (button.CommandParameter is UrlDescription)
+            if (button.isDownloaded)
             {
-                var downloadInfo = (UrlDescription)button?.CommandParameter;
-                await DownloadAndSave(downloadInfo);
-            }
-            else if (button.CommandParameter is List<UrlDescription>)
-            {
-                var downloadInfo = (List<UrlDescription>)button?.CommandParameter;
-                await DownloadAndSave(downloadInfo);
-            }
+                if (button.UrlDescription != null)
+                {
+                    var downloadInfo = button.UrlDescription;
+                    if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
+                    {
+                        DependencyService.Get<IToastService>().MakeText("Файл не найден");
+                        button.checkIsDownloaded();
+                        button.IsEnabled = true;
+                        return;
+                    }
+                    List<string> filePaths = new List<string>();
+                    filePaths.Add(downloadInfo.shareFilesPath);
 
-            await Navigation.PopModalAsync();
-            DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
-            button.BackgroundColor = Color.LightGreen;
-            button.Text = "Поделиться";
-            button.Clicked -= DownloadClicked;
-            button.Clicked += Share_Clicked;
+                    string intentType = getIntentType(downloadInfo);
+                    string intentTitle = getIntentTitle(downloadInfo);
+                    DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
+                }
+                else if (button.UrlDescriptions != null)
+                {
+                    List<string> filePaths = new List<string>();
+                    string intentType = "";
+                    string intentTitle = "";
+                    foreach (var downloadInfo in button.UrlDescriptions)
+                    {
+                        if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
+                        {
+                            DependencyService.Get<IToastService>().MakeText("Файлы не найдены");
+                            button.checkIsDownloaded();
+                            button.IsEnabled = true;
+                            return;
+                        }
+                        if (intentType.Length == 0)
+                        {
+                            intentType = getIntentType(downloadInfo);
+                        }
+                        if (intentTitle.Length == 0)
+                        {
+                            intentTitle = getIntentTitle(downloadInfo);
+                        }
+                        filePaths.Add(downloadInfo.shareFilesPath);
+                    }
+
+                    DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
+                }
+            }
+            else
+            {
+                await Navigation.PushModalAsync(new DownloadBanner());
+
+                if (button.UrlDescription != null)
+                {
+                    await DownloadAndSave(button.UrlDescription);
+                }
+                else if (button.UrlDescriptions != null)
+                {
+                    await DownloadAndSave(button.UrlDescriptions);
+                }
+                button.checkIsDownloaded();
+
+                await Navigation.PopModalAsync();
+                DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
+            }
             button.IsEnabled = true;
-        }
-
-        private void TabbedSwitch_OnSwitch(object sender, OnSwitchArgs e)
-        {
-            isSaveToDownloads = e.SelectedIndex == 1;
         }
 
         private string getIntentType(UrlDescription description)
@@ -160,58 +365,6 @@ namespace TikTokDownloader
                 title = data.music_description;
             }
             return title;
-        }
-
-        private void Share_Clicked(object sender, EventArgs e)
-        {
-            var button = sender as Button;
-            button.IsEnabled = false;
-
-            if (button.CommandParameter is UrlDescription)
-            {
-                var downloadInfo = (UrlDescription)button?.CommandParameter;
-                if (downloadInfo.shareFilesPath == null)
-                {
-                    DependencyService.Get<IToastService>().MakeText("Файл не найден");
-                    button.IsEnabled = true;
-                    return;
-                }
-                List<string> filePaths = new List<string>();
-                filePaths.Add(downloadInfo.shareFilesPath);
-
-                string intentType = getIntentType(downloadInfo);
-                string intentTitle = getIntentTitle(downloadInfo);
-                DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
-            }
-            else if (button.CommandParameter is List<UrlDescription>)
-            {
-                var downloadInfos = (List<UrlDescription>)button?.CommandParameter;
-                List<string> filePaths = new List<string>();
-                string intentType = "";
-                string intentTitle = "";
-                foreach (var downloadInfo in downloadInfos)
-                {
-                    if (downloadInfo.shareFilesPath == null)
-                    {
-                        DependencyService.Get<IToastService>().MakeText("Файлы не найдены");
-                        button.IsEnabled = true;
-                        return;
-                    }
-                    if (intentType.Length == 0)
-                    {
-                        intentType = getIntentType(downloadInfo);
-                    }
-                    if (intentTitle.Length == 0)
-                    {
-                        intentTitle = getIntentTitle(downloadInfo);
-                    }
-                    filePaths.Add(downloadInfo.shareFilesPath);
-                }
-
-                DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
-            }
-
-            button.IsEnabled = true;
         }
     }
 }

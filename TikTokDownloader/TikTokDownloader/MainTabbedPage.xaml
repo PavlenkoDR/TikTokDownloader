@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
+            x:Class="TikTokDownloader.MainTabbedPage"
+            NavigationPage.HasNavigationBar="false"
+            BarBackgroundColor="#6983fa"
+            BarTextColor="White"
+            SelectedTabColor="White"
+            UnselectedTabColor="LightGray">
+    <!--Pages can be added as references or inline-->
+    <NavigationPage IconImageSource="{Binding homeImageSource}" Title="Скачивание">
+        <x:Arguments>
+            <tiktokdownloader:MainPage/>
+        </x:Arguments>
+    </NavigationPage>
+    <NavigationPage IconImageSource="{Binding historyImageSource}" Title="История">
+        <x:Arguments>
+            <ContentPage/>
+        </x:Arguments>
+    </NavigationPage>
+</TabbedPage>
