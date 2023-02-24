@@ -13,6 +13,7 @@ using System.IO;
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FileService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ClipBoardService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ToastService))]
+[assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FirebaseService))]
 namespace TikTokDownloader.Droid
 {
     [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
@@ -208,6 +209,23 @@ namespace TikTokDownloader.Droid
         public void MakeText(string text, ToastLength length)
         {
             Toast.MakeText(Application.Context, text, (Android.Widget.ToastLength)length).Show();
+        }
+    }
+
+    public class FirebaseService : IFirebaseService
+    {
+        public void SendUnsentReports()
+        {
+            Firebase.Crashlytics.FirebaseCrashlytics.Instance.SendUnsentReports();
+        }
+        public void RecordException(System.Exception exception)
+        {
+            Firebase.Crashlytics.FirebaseCrashlytics.Instance.RecordException(Java.Lang.Throwable.FromException(exception));
+        }
+
+        public void Log(string message)
+        {
+            Firebase.Crashlytics.FirebaseCrashlytics.Instance.Log(message);
         }
     }
 }
