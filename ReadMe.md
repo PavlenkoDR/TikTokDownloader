@@ -1,6 +1,4 @@
 # TikTok downloader application
-Xamarin.Forms Android Target Version 9.0
-
 The application allows you to download and share watermark and no-watermark videos and images. It also allows you to separately download music from the video
 
 [How to API 12 on Visual Studio 2019](https://github.com/xamarin/xamarin-android/wiki/JDK-11-Warning)
