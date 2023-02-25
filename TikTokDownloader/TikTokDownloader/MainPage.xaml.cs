@@ -396,6 +396,25 @@ namespace TikTokDownloader
         private async void Button_ClickedAsync(object sender, EventArgs e)
         {
             (sender as Button).IsEnabled = false;
+
+            var fileService = DependencyService.Get<IFileService>();
+            bool permissionsGranted = await fileService.CheckPermissions();
+            if (!permissionsGranted)
+            {
+                bool answer = await DisplayAlert("Нет прав доступа к хранилищу файлов", "Чтобы исправить проблему, можно переустановить программу и разрешить доступ, либо дать доступ в настройках. Открыть настройки приложения?", "Да", "Нет");
+                if (answer)
+                {
+                    fileService.OpenAppSettings();
+                }
+                else
+                {
+                    await DisplayAlert("Отказано в правах доступа", "Программа не может работать без прав доступа к файлам", "Я понимаю");
+                }
+                (sender as Button).IsEnabled = true;
+                return;
+            }
+            var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath() };
+
             if (!MatchTikTokUrl(videoURL))
             {
                 DependencyService.Get<IToastService>().MakeText("Вставьте ТикТок ссылку в поле");

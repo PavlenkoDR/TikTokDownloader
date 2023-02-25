@@ -8,5 +8,7 @@ namespace TikTokDownloader
         void ShareMediaFile(string title, string[] filesPath, string intentType);
         Task<string> getGalleryPath();
         Task<string> getDownloadsPath();
+        Task<bool> CheckPermissions();
+        void OpenAppSettings();
     }
 }

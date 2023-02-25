@@ -174,6 +174,14 @@ namespace TikTokDownloader.Droid
                 Platform.AppContext.StartActivity(chooserIntent);
             }
         }
+        public void OpenAppSettings()
+        {
+            var intent = new Intent(Android.Provider.Settings.ActionApplicationDetailsSettings);
+            intent.AddFlags(ActivityFlags.NewTask);
+            var uri = Android.Net.Uri.FromParts("package", AppInfo.PackageName, null);
+            intent.SetData(uri);
+            Application.Context.StartActivity(intent);
+        }
     }
 
     public class ClipBoardService : IClipBoardService
