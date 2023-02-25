@@ -14,8 +14,8 @@ namespace TikTokDownloader
 
     public partial class MainPage : ContentPage
     {
-        public string videoURL { get; set; }
-        public string debugText { get; set; }
+        public string videoURL { get; set; } = "";
+        public string debugText { get; set; } = "";
         public ImageSource linkImageSource { get => ImageSource.FromResource("TikTokDownloader.Assets.link.jpg"); }
         public ImageSource shareImageSource { get => ImageSource.FromResource("TikTokDownloader.Assets.share.jpg"); }
         public MainPage()
@@ -390,7 +390,7 @@ namespace TikTokDownloader
 
         private bool MatchTikTokUrl(string url)
         {
-            return Regex.Match(url, "http.://.*tiktok.*/.*").Success;
+            return Regex.Match(url ?? "", "http.://.*tiktok.*/.*").Success;
         }
 
         private async void Button_ClickedAsync(object sender, EventArgs e)
