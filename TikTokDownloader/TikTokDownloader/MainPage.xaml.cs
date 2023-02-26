@@ -29,10 +29,12 @@ namespace TikTokDownloader
             base.OnSizeAllocated(width, height);
             if (!oneShotPaste)
             {
+                FirebaseCrashlyticsServiceInstance.Log("oneShotPaste");
                 oneShotPaste = true;
                 var text = DependencyService.Get<IClipBoardService>().Get();
                 if (MatchTikTokUrl(text))
                 {
+                    FirebaseCrashlyticsServiceInstance.Log("oneShotPaste url matched");
                     urlEditor.Text = text;
                     videoURL = text;
                 }
@@ -41,6 +43,7 @@ namespace TikTokDownloader
 
         private async Task<DownloadData> getContentFromTikTok(string url)
         {
+            FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok");
             string aweme_id = null;
             {
                 HttpClient client = new HttpClient();
@@ -49,6 +52,7 @@ namespace TikTokDownloader
                 var response = await client.GetAsync(url, cancellationTokenSource.Token);
                 if (cancellationTokenSource.IsCancellationRequested)
                 {
+                    FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok timeout");
                     return null;
                 }
                 var content = await response.Content.ReadAsStringAsync();
@@ -242,17 +246,20 @@ namespace TikTokDownloader
                     url_thumbnail_list = url_thumbnail_list
                 };
             }
+            FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok null");
             return null;
         }
 
         private async Task<DownloadData> getContentFromDouyin(string url)
         {
+            FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin");
             HttpClient client = new HttpClient();
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(15000);
             var response = await client.GetAsync($"https://api.douyin.wtf/api?url={url}&minimal=false", cancellationTokenSource.Token);
             if (cancellationTokenSource.IsCancellationRequested)
             {
+                FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin timeout");
                 return null;
             }
             var json = await response.Content.ReadAsStringAsync();
@@ -262,6 +269,7 @@ namespace TikTokDownloader
 
             if (status == "failed")
             {
+                FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin failed");
                 return null;
             }
             else if (status == "success")
@@ -385,29 +393,42 @@ namespace TikTokDownloader
                     url_thumbnail_list = new List<UrlDescription>()
                 };
             }
+            FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin null");
             return null;
         }
 
         private bool MatchTikTokUrl(string url)
         {
+            FirebaseCrashlyticsServiceInstance.Log("MatchTikTokUrl");
             return Regex.Match(url ?? "", "http.://.*tiktok.*/.*").Success;
         }
 
         private async void Button_ClickedAsync(object sender, EventArgs e)
         {
+            FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync");
             (sender as Button).IsEnabled = false;
 
             var fileService = DependencyService.Get<IFileService>();
             bool permissionsGranted = await fileService.CheckPermissions();
             if (!permissionsGranted)
             {
+                FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync permissions not granted");
                 bool answer = await DisplayAlert("Нет прав доступа к хранилищу файлов", "Чтобы исправить проблему, можно переустановить программу и разрешить доступ, либо дать доступ в настройках. Открыть настройки приложения?", "Да", "Нет");
                 if (answer)
                 {
-                    fileService.OpenAppSettings();
+                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync open settings");
+                    var isOpened = fileService.OpenAppSettings();
+                    if (!isOpened)
+                    {
+                        FirebaseCrashlyticsServiceInstance.Log("setting not opened");
+                        FirebaseCrashlyticsServiceInstance.RecordException(new Exception("can not open settings"));
+                        FirebaseCrashlyticsServiceInstance.SendUnsentReports();
+                        await DisplayAlert("Нет возможности открыть настройки", "Откройте настройки, найдите там приложение и разрешите доступ к хранилищу файлов вручную", "Хорошо");
+                    }
                 }
                 else
                 {
+                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync grant permissions ignored");
                     await DisplayAlert("Отказано в правах доступа", "Программа не может работать без прав доступа к файлам", "Я понимаю");
                 }
                 (sender as Button).IsEnabled = true;
@@ -417,6 +438,7 @@ namespace TikTokDownloader
 
             if (!MatchTikTokUrl(videoURL))
             {
+                FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync url not matched");
                 DependencyService.Get<IToastService>().MakeText("Вставьте ТикТок ссылку в поле");
                 (sender as Button).IsEnabled = true;
                 return;
@@ -461,8 +483,10 @@ namespace TikTokDownloader
                         downloadLauncher(getContentFromDouyin)
                     });
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync getContent* exception");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 }
                 if (result != null)
                 {
@@ -475,6 +499,7 @@ namespace TikTokDownloader
             await Navigation.PopModalAsync();
             if (result != null)
             {
+                FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync success");
                 await Navigation.PushAsync(new DownloadPage(result));
             }
             else
@@ -486,12 +511,14 @@ namespace TikTokDownloader
 
         private void ImageButton_Clicked(object sender, EventArgs e)
         {
+            FirebaseCrashlyticsServiceInstance.Log("ImageButton_Clicked");
             urlEditor.Text = "";
             videoURL = "";
         }
 
         private void Button_Clicked(object sender, EventArgs e)
         {
+            FirebaseCrashlyticsServiceInstance.Log("Button_Clicked");
             var text = DependencyService.Get<IClipBoardService>().Get();
             urlEditor.Text = text;
             videoURL = text;

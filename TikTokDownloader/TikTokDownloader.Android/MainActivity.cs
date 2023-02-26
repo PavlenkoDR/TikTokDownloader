@@ -115,8 +115,12 @@ namespace TikTokDownloader.Droid
             }
             return null;
         }
-        public void ShareMediaFile(string title, string[] filesPath, string intentType)
+        public async void ShareMediaFile(string title, string[] filesPath, string intentType)
         {
+            if (!await CheckPermissions())
+            {
+                return;
+            }
             // File Share
             //var request = new ShareFileRequest
             //{
@@ -174,13 +178,23 @@ namespace TikTokDownloader.Droid
                 Platform.AppContext.StartActivity(chooserIntent);
             }
         }
-        public void OpenAppSettings()
+        public bool OpenAppSettings()
         {
-            var intent = new Intent(Android.Provider.Settings.ActionApplicationDetailsSettings);
-            intent.AddFlags(ActivityFlags.NewTask);
-            var uri = Android.Net.Uri.FromParts("package", AppInfo.PackageName, null);
-            intent.SetData(uri);
-            Application.Context.StartActivity(intent);
+            try
+            {
+                var intent = new Intent(Android.Provider.Settings.ActionApplicationDetailsSettings);
+                intent.AddFlags(ActivityFlags.NewTask);
+                var uri = Android.Net.Uri.FromParts("package", AppInfo.PackageName, null);
+                intent.SetData(uri);
+                Application.Context.StartActivity(intent);
+            }
+            catch (Java.Lang.Exception ex)
+            {
+                FirebaseCrashlyticsServiceInstance.Log("OpenAppSettings exception");
+                FirebaseCrashlyticsServiceInstance.RecordException(ex);
+                return false;
+            }
+            return true;
         }
     }
 
@@ -234,6 +248,44 @@ namespace TikTokDownloader.Droid
         public void Log(string message)
         {
             Firebase.Crashlytics.FirebaseCrashlytics.Instance.Log(message);
+        }
+
+        public void LogEvent(string eventId)
+        {
+            LogEvent(eventId, null);
+        }
+        public void LogEvent(string eventId, string paramName, string value)
+        {
+            LogEvent(eventId, new Dictionary<string, string>
+            {
+                {paramName, value}
+            });
+        }
+
+        public void SetUserId(string userId)
+        {
+            var fireBaseAnalytics = Firebase.Analytics.FirebaseAnalytics.GetInstance(Application.Context);
+            fireBaseAnalytics.SetUserId(userId);
+        }
+
+        public void LogEvent(string eventId, IDictionary<string, string> parameters)
+        {
+            var fireBaseAnalytics = Firebase.Analytics.FirebaseAnalytics.GetInstance(Application.Context);
+
+            if (parameters == null)
+		    {
+			    fireBaseAnalytics.LogEvent(eventId, null);
+			    return;
+		    }
+
+		    var bundle = new Bundle();
+
+		    foreach (var item in parameters)
+		    {
+			    bundle.PutString(item.Key, item.Value);
+		    }
+
+		    fireBaseAnalytics.LogEvent(eventId, bundle);
         }
     }
 }

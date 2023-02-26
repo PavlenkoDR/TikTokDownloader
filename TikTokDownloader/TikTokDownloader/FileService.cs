@@ -9,6 +9,6 @@ namespace TikTokDownloader
         Task<string> getGalleryPath();
         Task<string> getDownloadsPath();
         Task<bool> CheckPermissions();
-        void OpenAppSettings();
+        bool OpenAppSettings();
     }
 }
