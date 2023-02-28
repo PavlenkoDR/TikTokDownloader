@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Net;
 
 namespace TikTokDownloader
 {
@@ -41,21 +42,38 @@ namespace TikTokDownloader
             }
         }
 
-        private async Task<DownloadData> getContentFromTikTok(string url)
+        private DownloadData getContentFromTikTok(string url)
         {
             FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok");
             string aweme_id = null;
             {
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.Token.Register(() => {
+                    req.Abort();
+                });
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                req.AllowAutoRedirect = false;
+                var resp = req.GetResponse();
+                string realUrl = resp.Headers["Location"];
+                var match = Regex.Match(realUrl, ".*\\/(\\d*).*");
+                if (match.Groups.Count > 1)
+                {
+                    aweme_id = match.Groups[1].Value;
+                }
+            }
+            if (aweme_id == null)
+            {
                 HttpClient client = new HttpClient();
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSource.CancelAfter(10000);
-                var response = await client.GetAsync(url, cancellationTokenSource.Token);
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                var response = client.GetAsync(url, cancellationTokenSource.Token).Result;
                 if (cancellationTokenSource.IsCancellationRequested)
                 {
                     FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok timeout");
                     return null;
                 }
-                var content = await response.Content.ReadAsStringAsync();
+                var content = response.Content.ReadAsStringAsync().Result;
                 var splittedContent = content.Split(new[] { "\"aweme_id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
                 if (splittedContent.Length > 1)
                 {
@@ -69,9 +87,20 @@ namespace TikTokDownloader
                 request.RequestUri = new Uri($"https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id={aweme_id}");
                 request.Method = HttpMethod.Get;
                 request.Headers.Add("Accept", "application/json");
-                var response = await client.SendAsync(request);
-                var json = await response.Content.ReadAsStringAsync();
-                var obj = JsonConvert.DeserializeObject<JObject>(json);
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                var response = client.SendAsync(request, cancellationTokenSource.Token).Result;
+                var json = response.Content.ReadAsStringAsync().Result;
+                JObject obj = null;
+                try
+                {
+                    obj = JsonConvert.DeserializeObject<JObject>(json);
+                }
+                catch
+                {
+                    FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok parse json failed");
+                    return null;
+                }
                 var aweme_list = obj["aweme_list"] as JArray;
                 var target_aweme = aweme_list[0];
 
@@ -228,6 +257,7 @@ namespace TikTokDownloader
                         imageObjIdx++;
                     }
                 }
+                FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok success");
                 return new DownloadData
                 {
                     dynamic_cover = dynamic_cover_description,
@@ -250,20 +280,32 @@ namespace TikTokDownloader
             return null;
         }
 
-        private async Task<DownloadData> getContentFromDouyin(string url)
+        private DownloadData getContentFromDouyin(string url)
         {
             FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin");
             HttpClient client = new HttpClient();
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(15000);
-            var response = await client.GetAsync($"https://api.douyin.wtf/api?url={url}&minimal=false", cancellationTokenSource.Token);
+            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+            var response = client.GetAsync($"https://api.douyin.wtf/api?url={url}&minimal=false", cancellationTokenSource.Token).Result;
             if (cancellationTokenSource.IsCancellationRequested)
             {
                 FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin timeout");
                 return null;
             }
-            var json = await response.Content.ReadAsStringAsync();
-            var obj = JsonConvert.DeserializeObject<JObject>(json);
+            var json = response.Content.ReadAsStringAsync().Result;
+            JObject obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<JObject>(json);
+            }
+            catch
+            {
+                FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin parse json failed");
+            }
+            if (obj == null)
+            {
+                return null;
+            }
 
             var status = obj["status"].ToString();
 
@@ -375,6 +417,7 @@ namespace TikTokDownloader
                     }
                 }
 
+                FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin success");
                 return new DownloadData
                 {
                     dynamic_cover = dynamic_cover_description,
@@ -401,6 +444,14 @@ namespace TikTokDownloader
         {
             FirebaseCrashlyticsServiceInstance.Log("MatchTikTokUrl");
             return Regex.Match(url ?? "", "http.://.*tiktok.*/.*").Success;
+        }
+
+        private async Task WaitCancelToken(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                Thread.Yield();
+            }
         }
 
         private async void Button_ClickedAsync(object sender, EventArgs e)
@@ -448,33 +499,29 @@ namespace TikTokDownloader
             CancellationTokenSource cancellationTokenSource = null;
             int failsCount = 0;
             Mutex mutex = new Mutex();
-            Func<Func<string, Task<DownloadData>>, Task<DownloadData>> downloadLauncher = async (Func<string, Task<DownloadData>> task) =>
+            Func<Func<string, DownloadData>, Task<DownloadData>> downloadLauncher = async (Func<string, DownloadData> task) =>
             {
-                var taskResult = await task(videoURL);
+                var taskResult = task(videoURL);
                 if (taskResult == null)
                 {
                     mutex.WaitOne();
                     ++failsCount;
-                    bool canLeave = false;
                     if (failsCount == 2)
                     {
-                        canLeave = true;
+                        cancellationTokenSource.Cancel();
                     }
                     mutex.ReleaseMutex();
-                    while (!cancellationTokenSource.IsCancellationRequested && !canLeave)
-                    {
-                        Thread.Yield();
-                    }
+                    await WaitCancelToken(cancellationTokenSource.Token);
                 }
                 return taskResult;
             };
 
             DownloadData result = null;
-            for (int i = 1; i < 11; i++)
+            for (int i = 1; i < 4; i++)
             {
                 banner.tryCount = i;
                 cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSource.CancelAfter(15000);
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(25));
                 failsCount = 0;
                 try
                 {
