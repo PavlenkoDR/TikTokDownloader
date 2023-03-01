@@ -6,6 +6,7 @@ The application allows you to download and share watermark and no-watermark vide
 ## Download links:
 
 * [GitHub](https://github.com/PavlenkoDR/TikTokDownloader/releases)
+* [Google Play](https://play.google.com/store/apps/details?id=com.PavlenkoDR.tiktokdownloader)
 * [RuStore](https://apps.rustore.ru/app/com.PavlenkoDR.tiktokdownloader)
 
 ## App Screenshots
