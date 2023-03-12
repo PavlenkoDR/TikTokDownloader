@@ -48,15 +48,11 @@ namespace TikTokDownloader
             string aweme_id = null;
             {
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSource.Token.Register(() => {
-                    req.Abort();
-                });
-                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                req.Timeout = 5000;
                 req.AllowAutoRedirect = false;
                 var resp = req.GetResponse();
                 string realUrl = resp.Headers["Location"];
-                var match = Regex.Match(realUrl, ".*\\/(\\d*).*");
+                var match = Regex.Match(realUrl ?? "", ".*\\/(\\d*).*");
                 if (match.Groups.Count > 1)
                 {
                     aweme_id = match.Groups[1].Value;
