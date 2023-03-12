@@ -47,11 +47,13 @@ namespace TikTokDownloader
             FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok");
             string aweme_id = null;
             {
-                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-                req.Timeout = 5000;
-                req.AllowAutoRedirect = false;
-                var resp = req.GetResponse();
-                string realUrl = resp.Headers["Location"];
+                HttpClientHandler httpClientHandler = new HttpClientHandler();
+                httpClientHandler.AllowAutoRedirect = false;
+                HttpClient client = new HttpClient(httpClientHandler);
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                var response = client.GetAsync(url, cancellationTokenSource.Token).Result;
+                var realUrl = response.Headers.GetValues("Location").First();
                 var match = Regex.Match(realUrl ?? "", ".*\\/(\\d*).*");
                 if (match.Groups.Count > 1)
                 {

@@ -4,7 +4,6 @@
              x:Class="TikTokDownloader.MainPage"
              NavigationPage.HasNavigationBar="false"
              BackgroundColor="White">
-
     <Grid Padding="30">
         <Grid.RowDefinitions>
             <RowDefinition Height="9*"/>
@@ -36,10 +35,28 @@
         </StackLayout>
         <StackLayout Grid.Row="1" Margin="0, 10, 0, 0" VerticalOptions="StartAndExpand">
             <Grid>
-                <Frame Padding="10, 0, 5, 0" CornerRadius="15" BackgroundColor="#eaeaea">
+                <Frame Padding="10, 0, 5, 0" CornerRadius="15">
+                    <Frame.BackgroundColor>
+                        <OnPlatform x:TypeArguments="Color">
+                            <On Platform="Android" Value="#eaeaea" />
+                        </OnPlatform>
+                    </Frame.BackgroundColor>
                     <Grid>
-                        <Editor TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges" Margin="0, 0, 60, 0"/>
-                        <BoxView BackgroundColor="#eaeaea" HeightRequest="11" VerticalOptions="End"/>
+                        <Editor BackgroundColor="#eaeaea" TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges">
+                            <Editor.Margin>
+                                <OnPlatform x:TypeArguments="Thickness">
+                                    <On Platform="Android" Value="0, 0, 60, 0" />
+                                    <On Platform="UWP" Value="0, 0, 70, 0" />
+                                </OnPlatform>
+                            </Editor.Margin>
+                        </Editor>
+                        <BoxView BackgroundColor="#eaeaea" HeightRequest="11" VerticalOptions="End">
+                            <BoxView.IsVisible>
+                                <OnPlatform x:TypeArguments="x:Boolean">
+                                    <On Platform="UWP" Value="False" />
+                                </OnPlatform>
+                            </BoxView.IsVisible>
+                        </BoxView>
                     </Grid>
                 </Frame>
                 <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Margin="0, 0, 5, 0">
