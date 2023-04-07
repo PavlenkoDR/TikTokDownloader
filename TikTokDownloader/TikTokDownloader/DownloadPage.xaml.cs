@@ -325,15 +325,25 @@ namespace TikTokDownloader
                 {
                     await Navigation.PushModalAsync(new DownloadBanner());
 
-                    if (button.UrlDescription != null)
+                    try
                     {
-                        await DownloadAndSave(button.UrlDescription);
+                        if (button.UrlDescription != null)
+                        {
+                            await DownloadAndSave(button.UrlDescription);
+                        }
+                        else if (button.UrlDescriptions != null)
+                        {
+                            await DownloadAndSave(button.UrlDescriptions);
+                        }
+                        button.checkIsDownloaded();
                     }
-                    else if (button.UrlDescriptions != null)
+                    catch (Exception ex)
                     {
-                        await DownloadAndSave(button.UrlDescriptions);
+                        DependencyService.Get<IToastService>().MakeText("Не удалось сохранить, попытайтесь снова");
+                        FirebaseCrashlyticsServiceInstance.Log("download fail. httpclient or filesystem error");
+                        FirebaseCrashlyticsServiceInstance.RecordException(ex);
+                        FirebaseCrashlyticsServiceInstance.SendUnsentReports();
                     }
-                    button.checkIsDownloaded();
 
                     await Navigation.PopModalAsync();
                     DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");

@@ -6,6 +6,9 @@ namespace TikTokDownloader
 {
     public partial class App : Application
     {
+        public delegate void FocusHandler();
+        public static event FocusHandler OnGotFocus;
+        public static event FocusHandler OnLostFocus;
         public App()
         {
             InitializeComponent();
@@ -21,10 +24,12 @@ namespace TikTokDownloader
 
         protected override void OnSleep()
         {
+            OnLostFocus?.Invoke();
         }
 
         protected override void OnResume()
         {
+            OnGotFocus?.Invoke();
         }
     }
 }

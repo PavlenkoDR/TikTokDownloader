@@ -19,10 +19,30 @@ namespace TikTokDownloader
         public string debugText { get; set; } = "";
         public ImageSource linkImageSource { get => ImageSource.FromResource("TikTokDownloader.Assets.link.jpg"); }
         public ImageSource shareImageSource { get => ImageSource.FromResource("TikTokDownloader.Assets.share.jpg"); }
+        private string lastMatchedUrl = "";
         public MainPage()
         {
             InitializeComponent();
             BindingContext = this;
+
+            App.OnGotFocus += () => {
+                Device.BeginInvokeOnMainThread(() => {
+                    var text = DependencyService.Get<IClipBoardService>().Get();
+                    if (MatchTikTokUrl(text))
+                    {
+                        if (lastMatchedUrl != text)
+                        {
+                            FirebaseCrashlyticsServiceInstance.Log("OnGotFocus url matched");
+                            urlEditor.Text = text;
+                            videoURL = text;
+                            lastMatchedUrl = text;
+                            DependencyService.Get<IToastService>().MakeText("Найдена новая ссылка на ТикТок");
+
+                            Navigation.PopToRootAsync();
+                        }
+                    }
+                });
+            };
         }
         private bool oneShotPaste = false;
         protected override void OnSizeAllocated(double width, double height)
@@ -38,6 +58,8 @@ namespace TikTokDownloader
                     FirebaseCrashlyticsServiceInstance.Log("oneShotPaste url matched");
                     urlEditor.Text = text;
                     videoURL = text;
+                    lastMatchedUrl = text;
+                    DependencyService.Get<IToastService>().MakeText("Найдена ссылка на ТикТок");
                 }
             }
         }
@@ -47,56 +69,86 @@ namespace TikTokDownloader
             FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok");
             string aweme_id = null;
             {
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
-                httpClientHandler.AllowAutoRedirect = false;
-                HttpClient client = new HttpClient(httpClientHandler);
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-                var response = client.GetAsync(url, cancellationTokenSource.Token).Result;
-                var realUrl = response.Headers.GetValues("Location").First();
-                var match = Regex.Match(realUrl ?? "", ".*\\/(\\d*).*");
-                if (match.Groups.Count > 1)
+                try
                 {
-                    aweme_id = match.Groups[1].Value;
+                    HttpClientHandler httpClientHandler = new HttpClientHandler();
+                    httpClientHandler.AllowAutoRedirect = false;
+                    HttpClient client = new HttpClient(httpClientHandler);
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                    var response = client.GetAsync(url, cancellationTokenSource.Token).Result;
+                    var realUrl = response.Headers.GetValues("Location").First();
+                    var match = Regex.Match(realUrl ?? "", ".*\\/(\\d*).*");
+                    if (match.Groups.Count > 1)
+                    {
+                        aweme_id = match.Groups[1].Value;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    FirebaseCrashlyticsServiceInstance.Log($"Button_ClickedAsync getContentFromTikTok get aweme_id first way exception. Url: {url}");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 }
             }
             if (aweme_id == null)
             {
-                HttpClient client = new HttpClient();
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-                var response = client.GetAsync(url, cancellationTokenSource.Token).Result;
-                if (cancellationTokenSource.IsCancellationRequested)
+                try
                 {
-                    FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok timeout");
-                    return null;
+                    HttpClient client = new HttpClient();
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                    var response = client.GetAsync(url, cancellationTokenSource.Token).Result;
+                    if (cancellationTokenSource.IsCancellationRequested)
+                    {
+                        FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok timeout");
+                        return null;
+                    }
+                    var content = response.Content.ReadAsStringAsync().Result;
+                    var splittedContent = content.Split(new[] { "\"aweme_id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
+                    if (splittedContent.Length > 1)
+                    {
+                        aweme_id = splittedContent[1].Split(new[] { "\"" }, 2, StringSplitOptions.RemoveEmptyEntries)[0];
+                    }
                 }
-                var content = response.Content.ReadAsStringAsync().Result;
-                var splittedContent = content.Split(new[] { "\"aweme_id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                if (splittedContent.Length > 1)
+                catch (Exception ex)
                 {
-                    aweme_id = splittedContent[1].Split(new[] { "\"" }, 2, StringSplitOptions.RemoveEmptyEntries)[0];
+                    FirebaseCrashlyticsServiceInstance.Log($"Button_ClickedAsync getContentFromTikTok get aweme_id second way exception. Url: {url}");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 }
             }
             if (aweme_id != null)
             {
-                HttpClient client = new HttpClient();
-                HttpRequestMessage request = new HttpRequestMessage();
-                request.RequestUri = new Uri($"https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id={aweme_id}");
-                request.Method = HttpMethod.Get;
-                request.Headers.Add("Accept", "application/json");
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-                var response = client.SendAsync(request, cancellationTokenSource.Token).Result;
-                var json = response.Content.ReadAsStringAsync().Result;
+                string json = null;
+                try
+                {
+                    HttpClient client = new HttpClient();
+                    HttpRequestMessage request = new HttpRequestMessage();
+                    request.RequestUri = new Uri($"https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id={aweme_id}");
+                    request.Method = HttpMethod.Get;
+                    request.Headers.Add("Accept", "application/json");
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                    var response = client.SendAsync(request, cancellationTokenSource.Token).Result;
+                    json = response.Content.ReadAsStringAsync().Result;
+                }
+                catch (Exception ex)
+                {
+                    FirebaseCrashlyticsServiceInstance.Log($"Button_ClickedAsync getContentFromTikTok get json exception. Url: {url}");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
+                }
+                if (json == null)
+                {
+                    return null;
+                }
                 JObject obj = null;
                 try
                 {
                     obj = JsonConvert.DeserializeObject<JObject>(json);
                 }
-                catch
+                catch (Exception ex)
                 {
                     FirebaseCrashlyticsServiceInstance.Log("getContentFromTikTok parse json failed");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
                     return null;
                 }
                 var aweme_list = obj["aweme_list"] as JArray;
@@ -280,25 +332,39 @@ namespace TikTokDownloader
 
         private DownloadData getContentFromDouyin(string url)
         {
-            FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin");
-            HttpClient client = new HttpClient();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-            var response = client.GetAsync($"https://api.douyin.wtf/api?url={url}&minimal=false", cancellationTokenSource.Token).Result;
-            if (cancellationTokenSource.IsCancellationRequested)
+            string json = null;
+            try
             {
-                FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin timeout");
+                FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin");
+                HttpClient client = new HttpClient();
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                var response = client.GetAsync($"https://api.douyin.wtf/api?url={url}&minimal=false", cancellationTokenSource.Token).Result;
+                if (cancellationTokenSource.IsCancellationRequested)
+                {
+                    FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin timeout");
+                    return null;
+                }
+                json = response.Content.ReadAsStringAsync().Result;
+            }
+            catch (Exception ex)
+            {
+                FirebaseCrashlyticsServiceInstance.Log($"Button_ClickedAsync getContentFromDouyin get json exception. Url: {url}");
+                FirebaseCrashlyticsServiceInstance.RecordException(ex);
+            }
+            if (json == null)
+            {
                 return null;
             }
-            var json = response.Content.ReadAsStringAsync().Result;
             JObject obj = null;
             try
             {
                 obj = JsonConvert.DeserializeObject<JObject>(json);
             }
-            catch
+            catch (Exception ex)
             {
                 FirebaseCrashlyticsServiceInstance.Log("getContentFromDouyin parse json failed");
+                FirebaseCrashlyticsServiceInstance.RecordException(ex);
             }
             if (obj == null)
             {
@@ -499,17 +565,35 @@ namespace TikTokDownloader
             Mutex mutex = new Mutex();
             Func<Func<string, DownloadData>, Task<DownloadData>> downloadLauncher = async (Func<string, DownloadData> task) =>
             {
-                var taskResult = task(videoURL);
-                if (taskResult == null)
+                DownloadData taskResult = null;
+                try
                 {
-                    mutex.WaitOne();
-                    ++failsCount;
-                    if (failsCount == 2)
+                    taskResult = task(videoURL);
+                }
+                catch (Exception ex)
+                {
+                    FirebaseCrashlyticsServiceInstance.Log($"downloadLauncher task exception. Url: {videoURL}");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
+                }
+                try
+                {
+                    if (taskResult == null)
                     {
-                        cancellationTokenSource.Cancel();
+                        mutex.WaitOne();
+                        ++failsCount;
+                        if (failsCount == 2)
+                        {
+                            cancellationTokenSource.Cancel();
+                        }
+                        mutex.ReleaseMutex();
+                        await WaitCancelToken(cancellationTokenSource.Token);
                     }
+                }
+                catch (Exception ex)
+                {
                     mutex.ReleaseMutex();
-                    await WaitCancelToken(cancellationTokenSource.Token);
+                    FirebaseCrashlyticsServiceInstance.Log($"downloadLauncher cancellationTokenSource exception. Url: {videoURL}");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 }
                 return taskResult;
             };
@@ -530,7 +614,7 @@ namespace TikTokDownloader
                 }
                 catch (Exception ex)
                 {
-                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync getContent* exception");
+                    FirebaseCrashlyticsServiceInstance.Log($"Button_ClickedAsync getContent* exception. Url: {videoURL}");
                     FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 }
                 if (result != null)
@@ -567,6 +651,10 @@ namespace TikTokDownloader
             var text = DependencyService.Get<IClipBoardService>().Get();
             urlEditor.Text = text;
             videoURL = text;
+            if (MatchTikTokUrl(text))
+            {
+                lastMatchedUrl = text;
+            }
         }
     }
 }

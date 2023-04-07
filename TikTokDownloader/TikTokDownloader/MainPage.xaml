@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TikTokDownloader.MainPage"
              NavigationPage.HasNavigationBar="false"
-             BackgroundColor="White">
+             BackgroundColor="White"
+             Title="Главная страница">
     <Grid Padding="30">
         <Grid.RowDefinitions>
             <RowDefinition Height="9*"/>
@@ -54,6 +55,7 @@
                             <BoxView.IsVisible>
                                 <OnPlatform x:TypeArguments="x:Boolean">
                                     <On Platform="UWP" Value="False" />
+                                    <On Platform="Android" Value="True" />
                                 </OnPlatform>
                             </BoxView.IsVisible>
                         </BoxView>

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.DownloadPage"
-             Title=""
+             Title="Страница скачивания"
              BackgroundColor="White">
     <ContentPage.Content>
         <StackLayout>
