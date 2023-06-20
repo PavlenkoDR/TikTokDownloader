@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using System.Linq;
 using static Xamarin.Forms.BindableProperty;
 
 namespace TikTokDownloader
@@ -16,6 +17,7 @@ namespace TikTokDownloader
         public string description { get => $"Скачать {_description}"; set => _description = value; }
         public string fileName { get; set; }
         public string shareFilesPath { get; set; } = null;
+        public bool withWatermark { get; set; } = false;
     }
     public class DownloadData
     {
@@ -41,6 +43,9 @@ namespace TikTokDownloader
 
     public class DownloadButton : Button
     {
+
+        public static List<DownloadButton> allDownloadButtons = new List<DownloadButton>();
+
         public static readonly BindableProperty UrlDescriptionProperty = Create(
             "UrlDescription",
             typeof(object),
@@ -195,6 +200,7 @@ namespace TikTokDownloader
         }
         public DownloadButton() : base()
         {
+            allDownloadButtons.Add(this);
         }
     }
 
@@ -244,10 +250,38 @@ namespace TikTokDownloader
             {
                 imageList.Add(new ImageUrlDescription { description = "Скачать миниатюру без водяного знака", downloadInfo = data.url_thumbnail_list });
             }
-            
+
+            DownloadButton.allDownloadButtons.Clear();
             InitializeComponent();
             
             BindingContext = this;
+        }
+
+        private async void checkActivityFlags()
+        {
+            if (CustomActivityFlags.needDownloadAndShare)
+            {
+                CustomActivityFlags.needDownloadAndShare = false;
+                if (isHaveVideos)
+                {
+                    var url = data.video_list.Where(x => !x.withWatermark).ToList().First();
+                    await Download(url, null);
+                    Share(url, null);
+                }
+                else if (isHaveImages)
+                {
+                    var urls = data.url_display_image_list;
+                    await Download(null, urls);
+                    Share(null, urls);
+                }
+                DownloadButton.allDownloadButtons.ForEach(x => x.checkIsDownloaded());
+            }
+        }
+        protected override void OnSizeAllocated(double width, double height)
+        {
+            base.OnSizeAllocated(width, height);
+
+            checkActivityFlags();
         }
 
         private async Task DownloadAndSave(UrlDescription downloadInfo)
@@ -267,6 +301,77 @@ namespace TikTokDownloader
             }
         }
 
+        private async Task Download(UrlDescription UrlDescription, List<UrlDescription> UrlDescriptions)
+        {
+            await Navigation.PushModalAsync(new DownloadBanner());
+
+            try
+            {
+                if (UrlDescription != null)
+                {
+                    await DownloadAndSave(UrlDescription);
+                }
+                else if (UrlDescriptions != null)
+                {
+                    await DownloadAndSave(UrlDescriptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                DependencyService.Get<IToastService>().MakeText("Не удалось сохранить, попытайтесь снова");
+                FirebaseCrashlyticsServiceInstance.Log("download fail. httpclient or filesystem error");
+                FirebaseCrashlyticsServiceInstance.RecordException(ex);
+                FirebaseCrashlyticsServiceInstance.SendUnsentReports();
+            }
+
+            await Navigation.PopModalAsync();
+            DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
+        }
+
+        private void Share(UrlDescription UrlDescription, List<UrlDescription> UrlDescriptions)
+        {
+            if (UrlDescription != null)
+            {
+                var downloadInfo = UrlDescription;
+                if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
+                {
+                    DependencyService.Get<IToastService>().MakeText("Файл не найден");
+                    return;
+                }
+                List<string> filePaths = new List<string>();
+                filePaths.Add(downloadInfo.shareFilesPath);
+
+                string intentType = getIntentType(downloadInfo);
+                string intentTitle = getIntentTitle(downloadInfo);
+                DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
+            }
+            else if (UrlDescriptions != null)
+            {
+                List<string> filePaths = new List<string>();
+                string intentType = "";
+                string intentTitle = "";
+                foreach (var downloadInfo in UrlDescriptions)
+                {
+                    if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
+                    {
+                        DependencyService.Get<IToastService>().MakeText("Файлы не найдены");
+                        return;
+                    }
+                    if (intentType.Length == 0)
+                    {
+                        intentType = getIntentType(downloadInfo);
+                    }
+                    if (intentTitle.Length == 0)
+                    {
+                        intentTitle = getIntentTitle(downloadInfo);
+                    }
+                    filePaths.Add(downloadInfo.shareFilesPath);
+                }
+
+                DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
+            }
+        }
+
         private async void DownloadClicked(object sender, EventArgs e)
         {
             FirebaseCrashlyticsServiceInstance.Log("DownloadClicked");
@@ -276,77 +381,13 @@ namespace TikTokDownloader
             {
                 if (button.isDownloaded)
                 {
-                    if (button.UrlDescription != null)
-                    {
-                        var downloadInfo = button.UrlDescription;
-                        if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
-                        {
-                            DependencyService.Get<IToastService>().MakeText("Файл не найден");
-                            button.checkIsDownloaded();
-                            button.IsEnabled = true;
-                            return;
-                        }
-                        List<string> filePaths = new List<string>();
-                        filePaths.Add(downloadInfo.shareFilesPath);
-
-                        string intentType = getIntentType(downloadInfo);
-                        string intentTitle = getIntentTitle(downloadInfo);
-                        DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
-                    }
-                    else if (button.UrlDescriptions != null)
-                    {
-                        List<string> filePaths = new List<string>();
-                        string intentType = "";
-                        string intentTitle = "";
-                        foreach (var downloadInfo in button.UrlDescriptions)
-                        {
-                            if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
-                            {
-                                DependencyService.Get<IToastService>().MakeText("Файлы не найдены");
-                                button.checkIsDownloaded();
-                                button.IsEnabled = true;
-                                return;
-                            }
-                            if (intentType.Length == 0)
-                            {
-                                intentType = getIntentType(downloadInfo);
-                            }
-                            if (intentTitle.Length == 0)
-                            {
-                                intentTitle = getIntentTitle(downloadInfo);
-                            }
-                            filePaths.Add(downloadInfo.shareFilesPath);
-                        }
-
-                        DependencyService.Get<IFileService>().ShareMediaFile(intentTitle, filePaths.ToArray(), intentType);
-                    }
+                    Share(button.UrlDescription, button.UrlDescriptions);
+                    button.checkIsDownloaded();
                 }
                 else
                 {
-                    await Navigation.PushModalAsync(new DownloadBanner());
-
-                    try
-                    {
-                        if (button.UrlDescription != null)
-                        {
-                            await DownloadAndSave(button.UrlDescription);
-                        }
-                        else if (button.UrlDescriptions != null)
-                        {
-                            await DownloadAndSave(button.UrlDescriptions);
-                        }
-                        button.checkIsDownloaded();
-                    }
-                    catch (Exception ex)
-                    {
-                        DependencyService.Get<IToastService>().MakeText("Не удалось сохранить, попытайтесь снова");
-                        FirebaseCrashlyticsServiceInstance.Log("download fail. httpclient or filesystem error");
-                        FirebaseCrashlyticsServiceInstance.RecordException(ex);
-                        FirebaseCrashlyticsServiceInstance.SendUnsentReports();
-                    }
-
-                    await Navigation.PopModalAsync();
-                    DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
+                    await Download(button.UrlDescription, button.UrlDescriptions);
+                    button.checkIsDownloaded();
                 }
             }
             catch (Exception ex)

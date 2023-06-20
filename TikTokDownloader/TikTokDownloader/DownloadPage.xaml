@@ -21,7 +21,7 @@
             </StackLayout>
             
             <ScrollView>
-                <StackLayout Padding="10" Spacing ="10">
+                <StackLayout Padding="10" Spacing ="10" x:Name="buttonsStack">
                     <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Название"/>
                     <Frame CornerRadius="15">
                         <StackLayout Orientation="Horizontal">

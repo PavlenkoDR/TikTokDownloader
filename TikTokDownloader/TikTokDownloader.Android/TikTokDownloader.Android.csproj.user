@@ -6,4 +6,7 @@
     <DefaultDevice>pixel_2_pie_9_0_-_api_28</DefaultDevice>
     <AndroidDesignerPreferredTheme>MainTheme</AndroidDesignerPreferredTheme>
   </PropertyGroup>
+  <PropertyGroup>
+    <ReferencePath>C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot\</ReferencePath>
+  </PropertyGroup>
 </Project>

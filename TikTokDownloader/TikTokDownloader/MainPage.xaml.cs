@@ -27,7 +27,16 @@ namespace TikTokDownloader
 
             App.OnGotFocus += () => {
                 Device.BeginInvokeOnMainThread(() => {
+                    if (!oneShotPaste)
+                    {
+                        return;
+                    }
                     var text = DependencyService.Get<IClipBoardService>().Get();
+                    if (CustomActivityFlags.needDownload || CustomActivityFlags.needDownloadAndShare)
+                    {
+                        text = CustomActivityFlags.url;
+                        DependencyService.Get<IClipBoardService>().Set(text);
+                    }
                     if (MatchTikTokUrl(text))
                     {
                         if (lastMatchedUrl != text)
@@ -36,7 +45,7 @@ namespace TikTokDownloader
                             urlEditor.Text = text;
                             videoURL = text;
                             lastMatchedUrl = text;
-                            DependencyService.Get<IToastService>().MakeText("Найдена новая ссылка на ТикТок");
+                            DependencyService.Get<IToastService>().MakeText("Найдена новая ссылка");
 
                             Navigation.PopToRootAsync();
                         }
@@ -53,13 +62,24 @@ namespace TikTokDownloader
                 FirebaseCrashlyticsServiceInstance.Log("oneShotPaste");
                 oneShotPaste = true;
                 var text = DependencyService.Get<IClipBoardService>().Get();
+                if (CustomActivityFlags.needDownload || CustomActivityFlags.needDownloadAndShare)
+                {
+                    text = CustomActivityFlags.url;
+                    DependencyService.Get<IClipBoardService>().Set(text);
+                }
                 if (MatchTikTokUrl(text))
                 {
                     FirebaseCrashlyticsServiceInstance.Log("oneShotPaste url matched");
                     urlEditor.Text = text;
                     videoURL = text;
                     lastMatchedUrl = text;
-                    DependencyService.Get<IToastService>().MakeText("Найдена ссылка на ТикТок");
+                    DependencyService.Get<IToastService>().MakeText("Найдена ссылка");
+
+                    if (CustomActivityFlags.needDownload || CustomActivityFlags.needDownloadAndShare)
+                    {
+                        CustomActivityFlags.needDownload = false;
+                        Button_ClickedAsync(null, null);
+                    }
                 }
             }
         }
@@ -182,7 +202,8 @@ namespace TikTokDownloader
                         {
                             url = download_addr,
                             description = "с водяным знаком",
-                            fileName = $"watermark_{aweme_id}.mp4"
+                            fileName = $"watermark_{aweme_id}.mp4",
+                            withWatermark = true
                         });
                     }
 
@@ -195,7 +216,8 @@ namespace TikTokDownloader
                         {
                             url = play_addr,
                             description = $"без водяного знака",
-                            fileName = $"no_watermark_{gear_name}_{aweme_id}.mp4"
+                            fileName = $"no_watermark_{gear_name}_{aweme_id}.mp4",
+                            withWatermark = false
                         });
                         break;
                     }
@@ -271,7 +293,8 @@ namespace TikTokDownloader
                             {
                                 url = display_image,
                                 description = $"{imageObjIdx}: изображения без водяного знака",
-                                fileName = $"{imageObjIdx}_no_watermark_{aweme_id}.jpeg"
+                                fileName = $"{imageObjIdx}_no_watermark_{aweme_id}.jpeg",
+                                withWatermark = false
                             });
                         }
                         var owner_watermark_image = extractImageUrl(imageObj["owner_watermark_image"]["url_list"] as JArray);
@@ -281,7 +304,8 @@ namespace TikTokDownloader
                             {
                                 url = owner_watermark_image,
                                 description = $"{imageObjIdx}: изображения с водяным знаком",
-                                fileName = $"{imageObjIdx}_watermark_{aweme_id}.jpeg"
+                                fileName = $"{imageObjIdx}_watermark_{aweme_id}.jpeg",
+                                withWatermark = true
                             });
                         }
                         var user_watermark_image = extractImageUrl(imageObj["user_watermark_image"]["url_list"] as JArray);
@@ -291,7 +315,8 @@ namespace TikTokDownloader
                             {
                                 url = user_watermark_image,
                                 description = $"{imageObjIdx}: изображения с водяным знаком и значком пользователя",
-                                fileName = $"{imageObjIdx}_user_watermark_{aweme_id}.jpeg"
+                                fileName = $"{imageObjIdx}_user_watermark_{aweme_id}.jpeg",
+                                withWatermark = true
                             });
                         }
                         var thumbnail = extractImageUrl(imageObj["thumbnail"]["url_list"] as JArray);
@@ -301,7 +326,8 @@ namespace TikTokDownloader
                             {
                                 url = thumbnail,
                                 description = $"{imageObjIdx}: миниатюры без водяного знака",
-                                fileName = $"{imageObjIdx}_thumbnail_no_watermark_{aweme_id}.jpeg"
+                                fileName = $"{imageObjIdx}_thumbnail_no_watermark_{aweme_id}.jpeg",
+                                withWatermark = false
                             });
                         }
                         imageObjIdx++;
@@ -409,12 +435,14 @@ namespace TikTokDownloader
                         new UrlDescription{
                             url = wm_video_url_HQ,
                             description = "с водяным знаком",
-                            fileName = $"watermark_hq_{aweme_id}.mp4"
+                            fileName = $"watermark_hq_{aweme_id}.mp4",
+                            withWatermark = true
                             },
                         new UrlDescription{
                             url = nwm_video_url_HQ,
                             description = "без водяного знака",
-                            fileName = $"no_watermark_hq_{aweme_id}.mp4"
+                            fileName = $"no_watermark_hq_{aweme_id}.mp4",
+                            withWatermark = false
                             }
                     };
                 }
@@ -428,12 +456,20 @@ namespace TikTokDownloader
                     {
                         int idx = 1;
                         no_watermark_image_list = (image_data["no_watermark_image_list"] as JArray)
-                            .Select(x => new UrlDescription { url = x.ToString(), fileName = $"{idx++}_no_watermark_{aweme_id}.jpeg" }).ToList();
+                            .Select(x => new UrlDescription {
+                                url = x.ToString(),
+                                fileName = $"{idx++}_no_watermark_{aweme_id}.jpeg",
+                                withWatermark = false
+                            }).ToList();
                     }
                     {
                         int idx = 1;
                         watermark_image_list = (image_data["watermark_image_list"] as JArray)
-                            .Select(x => new UrlDescription { url = x.ToString(), fileName = $"{idx++}_watermark_{aweme_id}.jpeg" }).ToList();
+                            .Select(x => new UrlDescription {
+                                url = x.ToString(),
+                                fileName = $"{idx++}_watermark_{aweme_id}.jpeg",
+                                withWatermark = true
+                            }).ToList();
                     }
                 }
 
@@ -492,7 +528,8 @@ namespace TikTokDownloader
                     music_list = music_url_list.Select(x => new UrlDescription
                     {
                         url = x,
-                        fileName = $"music_{aweme_id}.mp3"
+                        fileName = $"music_{aweme_id}.mp3",
+                        withWatermark = false
                     }).ToList(),
                     url_display_image_list = no_watermark_image_list,
                     url_user_watermark_image_list = watermark_image_list,
@@ -521,7 +558,7 @@ namespace TikTokDownloader
         private async void Button_ClickedAsync(object sender, EventArgs e)
         {
             FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync");
-            (sender as Button).IsEnabled = false;
+            downloadButton.IsEnabled = false;
 
             var fileService = DependencyService.Get<IFileService>();
             bool permissionsGranted = await fileService.CheckPermissions();
@@ -546,7 +583,7 @@ namespace TikTokDownloader
                     FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync grant permissions ignored");
                     await DisplayAlert("Отказано в правах доступа", "Программа не может работать без прав доступа к файлам", "Я понимаю");
                 }
-                (sender as Button).IsEnabled = true;
+                downloadButton.IsEnabled = true;
                 return;
             }
             var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath() };
@@ -554,8 +591,8 @@ namespace TikTokDownloader
             if (!MatchTikTokUrl(videoURL))
             {
                 FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync url not matched");
-                DependencyService.Get<IToastService>().MakeText("Вставьте ТикТок ссылку в поле");
-                (sender as Button).IsEnabled = true;
+                DependencyService.Get<IToastService>().MakeText("Вставьте ссылку в поле");
+                downloadButton.IsEnabled = true;
                 return;
             }
             var banner = new DownloadBanner();
@@ -635,7 +672,7 @@ namespace TikTokDownloader
             {
                 DependencyService.Get<IToastService>().MakeText("Попытайтесь снова");
             }
-            (sender as Button).IsEnabled = true;
+            downloadButton.IsEnabled = true;
         }
 
         private void ImageButton_Clicked(object sender, EventArgs e)
