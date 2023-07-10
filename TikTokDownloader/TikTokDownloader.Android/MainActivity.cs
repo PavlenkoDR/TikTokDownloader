@@ -16,38 +16,9 @@ using System.IO;
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FirebaseService))]
 namespace TikTokDownloader.Droid
 {
-    [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    [IntentFilter(new[] { Intent.ActionSend }, Categories = new[] { Intent.CategoryDefault }, DataMimeType = "text/plain", Label = "Скачать")]
-    public class DownloadActivity : MainActivity
-    {
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            base.OnCreate(savedInstanceState);
-            if (Intent.ActionSend.Equals(Intent.Action) &&
-                Intent.Type != null &&
-                "text/plain".Equals(Intent.Type))
-            {
-                CustomActivityFlags.needDownload = true;
-                CustomActivityFlags.url = Intent.Extras.GetString(Intent.ExtraText);
-
-                //if (Intent.Extras != null)
-                //{
-                //    foreach (var key in Intent.Extras.KeySet())
-                //    {
-                //        var value = Intent.Extras.GetString(key);
-                //        int kkk = 0;
-                //    }
-                //}
-
-                //Intent intent = new Intent(this, typeof(MainActivity));
-                //StartActivity(intent);
-            }
-        }
-    }
-
-    [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     [IntentFilter(new[] { Intent.ActionSend }, Categories = new[] { Intent.CategoryDefault }, DataMimeType = "text/plain", Label = "Скачать и поделиться")]
-    public class DownloadAndShareActivity : MainActivity
+    [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
+    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -59,16 +30,6 @@ namespace TikTokDownloader.Droid
                 CustomActivityFlags.needDownloadAndShare = true;
                 CustomActivityFlags.url = Intent.Extras.GetString(Intent.ExtraText);
             }
-        }
-    }
-
-
-    [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
-    {
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            base.OnCreate(savedInstanceState);
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
@@ -194,9 +155,9 @@ namespace TikTokDownloader.Droid
                 intent.SetType(intentType);
                 intent.SetFlags(ActivityFlags.GrantReadUriPermission);
                 intent.PutExtra(Intent.ExtraStream, uri);
-                intent.PutExtra(Intent.ExtraTitle, title);
+                intent.PutExtra(Intent.ExtraText, title);
 
-                var chooserIntent = Intent.CreateChooser(intent, "Поделиться файлом");
+                var chooserIntent = Intent.CreateChooser(intent, title);
                 chooserIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
                 Platform.AppContext.StartActivity(chooserIntent);
             }
@@ -218,7 +179,7 @@ namespace TikTokDownloader.Droid
                     uris.Add(uri);
                 }
                 intent.PutParcelableArrayListExtra(Intent.ExtraStream, uris);
-                intent.PutExtra(Intent.ExtraTitle, title);
+                intent.PutExtra(Intent.ExtraText, title);
 
                 var chooserIntent = Intent.CreateChooser(intent, title);
                 chooserIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask);
