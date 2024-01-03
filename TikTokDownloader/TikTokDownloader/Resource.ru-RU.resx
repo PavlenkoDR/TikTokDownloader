@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Attempt" xml:space="preserve">
+    <value>Попытка</value>
+  </data>
+  <data name="CanNotOpenSettingsInfo" xml:space="preserve">
+    <value>Откройте настройки, найдите там приложение и разрешите доступ к хранилищу файлов вручную</value>
+  </data>
+  <data name="CanNotOpenSettingsTitle" xml:space="preserve">
+    <value>Нет возможности открыть настройки</value>
+  </data>
+  <data name="ContatctMail" xml:space="preserve">
+    <value>Почта </value>
+  </data>
+  <data name="ContatctTelegram" xml:space="preserve">
+    <value>Telegram </value>
+  </data>
+  <data name="ContatctVK" xml:space="preserve">
+    <value>ВК </value>
+  </data>
+  <data name="DeveloperContacts" xml:space="preserve">
+    <value>Контакты разработчика:</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="DownloadActivityName" xml:space="preserve">
+    <value>Страница скачивания</value>
+  </data>
+  <data name="DownloadImagesWithotWatermark" xml:space="preserve">
+    <value>Скачать изображения без водяного знака</value>
+  </data>
+  <data name="DownloadImagesWithWatermark" xml:space="preserve">
+    <value>Скачать изображения с водяным знаком</value>
+  </data>
+  <data name="DownloadImagesWithWatermarkAndUser" xml:space="preserve">
+    <value>Скачать изображения с водяным знаком и значком пользователя</value>
+  </data>
+  <data name="Downloading" xml:space="preserve">
+    <value>Скачивание</value>
+  </data>
+  <data name="DownloadThubnailWithoutWatermark" xml:space="preserve">
+    <value>Скачать миниатюру без водяного знака</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>Файл не найден</value>
+  </data>
+  <data name="FilesNotFound" xml:space="preserve">
+    <value>Файлы не найдены</value>
+  </data>
+  <data name="GetDataFailedInfo" xml:space="preserve">
+    <value>Сторонние сервисы недоступны по независящим от приложения причинам. Если не удастся скачать в течении некоторого времени - свяжитесь с разработчиком</value>
+  </data>
+  <data name="GetDataFailedTitle" xml:space="preserve">
+    <value>Не удалось получить данные</value>
+  </data>
+  <data name="Good" xml:space="preserve">
+    <value>Хорошо</value>
+  </data>
+  <data name="HelpInfo1" xml:space="preserve">
+    <value>1. Нажмите кнопку поделиться в TT</value>
+  </data>
+  <data name="HelpInfo2" xml:space="preserve">
+    <value>2. Скопируйте ссылку</value>
+  </data>
+  <data name="HelpInfo3" xml:space="preserve">
+    <value>3. Вставьте ссылку в поле ниже</value>
+  </data>
+  <data name="HelpInfo4" xml:space="preserve">
+    <value>4. Нажмите скачать</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>История</value>
+  </data>
+  <data name="Images" xml:space="preserve">
+    <value>Изображения</value>
+  </data>
+  <data name="ImagesWithoutWaterMark" xml:space="preserve">
+    <value>изображения без водяного знака</value>
+  </data>
+  <data name="ImagesWithWaterMark" xml:space="preserve">
+    <value>изображения с водяным знаком</value>
+  </data>
+  <data name="ImagesWithWaterMarkAndUser" xml:space="preserve">
+    <value>изображения с водяным знаком и значком пользователя</value>
+  </data>
+  <data name="LanguageFlag" xml:space="preserve">
+    <value>Сменить язык 🇷🇺</value>
+  </data>
+  <data name="LinkHere" xml:space="preserve">
+    <value>Вставьте ссылку сюда</value>
+  </data>
+  <data name="MainActivityName" xml:space="preserve">
+    <value>Главная страница</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="NewUrlFinded" xml:space="preserve">
+    <value>Найдена новая ссылка</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="NoHaveFilePermissionsInfo" xml:space="preserve">
+    <value>Чтобы исправить проблему, можно переустановить программу и разрешить доступ, либо дать доступ в настройках. Открыть настройки приложения?</value>
+  </data>
+  <data name="NoHaveFilePermissionsTitle" xml:space="preserve">
+    <value>Нет прав доступа к хранилищу файлов</value>
+  </data>
+  <data name="NoHavePermissions" xml:space="preserve">
+    <value>Нет прав доступа к хранилищу</value>
+  </data>
+  <data name="PastLinkToField" xml:space="preserve">
+    <value>Вставьте ссылку в поле</value>
+  </data>
+  <data name="PermissionsDescardedInfo" xml:space="preserve">
+    <value>Программа не может работать без прав доступа к файлам</value>
+  </data>
+  <data name="PermissionsDescardedTitle" xml:space="preserve">
+    <value>Отказано в правах доступа</value>
+  </data>
+  <data name="SavedToDownloads" xml:space="preserve">
+    <value>Сохранено в загрузки</value>
+  </data>
+  <data name="SavedToGallery" xml:space="preserve">
+    <value>Сохранено в галерею</value>
+  </data>
+  <data name="SaveFailTryAgain" xml:space="preserve">
+    <value>Не удалось сохранить, попытайтесь снова</value>
+  </data>
+  <data name="Share" xml:space="preserve">
+    <value>Поделиться</value>
+  </data>
+  <data name="Sound" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="ThubnailsWithoutWaterMark" xml:space="preserve">
+    <value>миниатюры без водяного знака</value>
+  </data>
+  <data name="TryAgain" xml:space="preserve">
+    <value>Попытайтесь снова</value>
+  </data>
+  <data name="Understend" xml:space="preserve">
+    <value>Я понимаю</value>
+  </data>
+  <data name="Video" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="WithoutWaterMark" xml:space="preserve">
+    <value>без водяного знака</value>
+  </data>
+  <data name="WithWaterMark" xml:space="preserve">
+    <value>с водяным знаком</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+</root>

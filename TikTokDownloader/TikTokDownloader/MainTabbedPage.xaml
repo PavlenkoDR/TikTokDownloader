@@ -7,14 +7,15 @@
             BarBackgroundColor="#6983fa"
             BarTextColor="White"
             SelectedTabColor="White"
-            UnselectedTabColor="LightGray">
+            UnselectedTabColor="LightGray"
+            xmlns:local="clr-namespace:TikTokDownloader">
     <!--Pages can be added as references or inline-->
-    <NavigationPage IconImageSource="{Binding homeImageSource}" Title="Скачивание">
+    <NavigationPage IconImageSource="{Binding homeImageSource}" Title="{local:Translate Downloading}">
         <x:Arguments>
             <tiktokdownloader:MainPage/>
         </x:Arguments>
     </NavigationPage>
-    <NavigationPage IconImageSource="{Binding historyImageSource}" Title="История">
+    <NavigationPage IconImageSource="{Binding historyImageSource}" Title="{local:Translate History}">
         <x:Arguments>
             <ContentPage/>
         </x:Arguments>

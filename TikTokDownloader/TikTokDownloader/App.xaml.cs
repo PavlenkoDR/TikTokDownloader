@@ -13,6 +13,8 @@ namespace TikTokDownloader
         public static event FocusHandler OnLostFocus;
         public App()
         {
+            Settings.Load();
+            
             InitializeComponent();
 
             var navigationPage = new NavigationPage(new MainPage());

@@ -18,7 +18,7 @@ namespace TikTokDownloader
             }
         }
         public bool tryCountEnabled { get => tryCount > 1; }
-        public string tryCountFormatted { get => $"Попытка {tryCount}/3"; }
+        public string tryCountFormatted { get => $"{TranslateExtension.GetText("Attempt")} {tryCount}/3"; }
         public DownloadBanner()
         {
             InitializeComponent();

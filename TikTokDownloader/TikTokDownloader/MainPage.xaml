@@ -1,16 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:TikTokDownloader"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.MainPage"
              NavigationPage.HasNavigationBar="false"
              BackgroundColor="White"
-             Title="Главная страница">
+             Title="{local:Translate MainActivityName}">
     <Grid Padding="30, 0, 30, 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="10*"/>
             <RowDefinition Height="10*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
+        <Frame Grid.Row="0" HorizontalOptions="EndAndExpand" VerticalOptions="StartAndExpand" Padding="10" Margin="5">
+            <StackLayout>
+                <Label Text="{Binding languageProperty, Mode=TwoWay}" TextColor="Black"/>
+            </StackLayout>
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+            </Frame.GestureRecognizers>
+        </Frame>
         <StackLayout Grid.Row="0" VerticalOptions="EndAndExpand">
             <Grid Padding="5" Margin="0,0,0,50" MinimumHeightRequest="300" RowSpacing="0">
                 <Grid.RowDefinitions>
@@ -20,18 +29,18 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <StackLayout Grid.Row="0" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="1. Нажмите кнопку поделиться в TT" VerticalOptions="CenterAndExpand"/>
+                    <Label TextColor="Black" Text="{local:Translate HelpInfo1}" VerticalOptions="CenterAndExpand"/>
                     <Image Source="{Binding shareImageSource}" VerticalOptions="CenterAndExpand"/>
                 </StackLayout>
                 <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="2. Скопируйте ссылку" VerticalOptions="CenterAndExpand"/>
+                    <Label TextColor="Black" Text="{local:Translate HelpInfo2}" VerticalOptions="CenterAndExpand"/>
                     <Image Source="{Binding linkImageSource}" VerticalOptions="CenterAndExpand"/>
                 </StackLayout>
                 <StackLayout Grid.Row="2" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="3. Вставьте ссылку в поле ниже" VerticalOptions="CenterAndExpand"/>
+                    <Label TextColor="Black" Text="{local:Translate HelpInfo3}" VerticalOptions="CenterAndExpand"/>
                 </StackLayout>
                 <StackLayout Grid.Row="3" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="4. Нажмите скачать" VerticalOptions="CenterAndExpand"/>
+                    <Label TextColor="Black" Text="{local:Translate HelpInfo4}" VerticalOptions="CenterAndExpand"/>
                 </StackLayout>
             </Grid>
         </StackLayout>
@@ -44,7 +53,7 @@
                         </OnPlatform>
                     </Frame.BackgroundColor>
                     <Grid>
-                        <Editor BackgroundColor="#eaeaea" TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="Вставьте ссылку сюда" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges">
+                        <Editor BackgroundColor="#eaeaea" TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="{local:Translate LinkHere}" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges">
                             <Editor.Margin>
                                 <OnPlatform x:TypeArguments="Thickness">
                                     <On Platform="Android" Value="0, 0, 60, 0" />
@@ -72,16 +81,16 @@
                 </StackLayout>
             </Grid>
             <Frame Padding="0, 0, 0, 0" CornerRadius="15" HorizontalOptions="Center">
-                <Button x:Name="downloadButton" BackgroundColor="#afbdff" WidthRequest="140" HeightRequest="45" CornerRadius="15" Text="Скачать" Clicked="Button_ClickedAsync" TextColor="Black"/>
+                <Button x:Name="downloadButton" BackgroundColor="#afbdff" WidthRequest="140" HeightRequest="45" CornerRadius="15" Text="{local:Translate Download}" Clicked="Button_ClickedAsync" TextColor="Black"/>
             </Frame>
             <Label TextColor="Black" VerticalOptions="StartAndExpand" Text="{Binding debugText}"/>
         </StackLayout>
         <StackLayout Padding="5" Grid.Row="2" VerticalOptions="End">
-            <Label TextColor="Black" Text="Контакты разработчика:"/>
+            <Label TextColor="Black" Text="{local:Translate DeveloperContacts}"/>
             <Label TextColor="Black">
                 <Label.FormattedText>
                     <FormattedString>
-                        <Span Text="Почта " />
+                        <Span Text="{local:Translate ContatctMail}" />
                         <local:HyperlinkSpan Text="pavlenkocraft@gmail.com"
                                          Url="mailto:pavlenkocraft@gmail.com" />
                     </FormattedString>
@@ -90,7 +99,7 @@
             <Label TextColor="Black">
                 <Label.FormattedText>
                     <FormattedString>
-                        <Span Text="ВК " />
+                        <Span Text="{local:Translate ContatctVK}" />
                         <local:HyperlinkSpan Text="@dimka.fitonyashka"
                                          Url="https://vk.com/dimka.fitonyashka" />
                     </FormattedString>
@@ -99,7 +108,7 @@
             <Label TextColor="Black">
                 <Label.FormattedText>
                     <FormattedString>
-                        <Span Text="Telegram " />
+                        <Span Text="{local:Translate ContatctTelegram}" />
                         <local:HyperlinkSpan Text="@dimka_fitonyashka"
                                          Url="https://t.me/dimka_fitonyashka" />
                     </FormattedString>

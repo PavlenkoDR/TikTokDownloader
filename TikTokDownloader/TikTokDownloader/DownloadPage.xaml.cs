@@ -14,7 +14,8 @@ namespace TikTokDownloader
     {
         public string url { get; set; }
         private string _description;
-        public string description { get => $"Скачать {_description}"; set => _description = value; }
+        public string description { get => $"{TranslateExtension.GetText("Download")} {_description}"; set => _description = value; }
+        public string descriptionShare { get => TranslateExtension.GetText("Share"); }
         public string fileName { get; set; }
         public string shareFilesPath { get; set; } = null;
         public bool withWatermark { get; set; } = false;
@@ -38,6 +39,7 @@ namespace TikTokDownloader
     public struct ImageUrlDescription
     {
         public string description { get; set; }
+        public string descriptionShare { get => TranslateExtension.GetText("Share"); }
         public List<UrlDescription> downloadInfo { get; set; }
     }
 
@@ -58,6 +60,11 @@ namespace TikTokDownloader
         );
         public static readonly BindableProperty NotDownloadedDescriptionProperty = Create(
             "NotDownloadedDescription",
+            typeof(string),
+            typeof(DownloadButton)
+        );
+        public static readonly BindableProperty DownloadedDescriptionProperty = Create(
+            "DownloadedDescription",
             typeof(string),
             typeof(DownloadButton)
         );
@@ -105,7 +112,18 @@ namespace TikTokDownloader
                 OnPropertyChanged("NotDownloadedColor");
             }
         }
-        public string DownloadedDescription { get; set; } = null;
+        public string DownloadedDescription
+        {
+            get
+            {
+                return GetValue(DownloadedDescriptionProperty) as string;
+            }
+            set
+            {
+                SetValue(DownloadedDescriptionProperty, value);
+                OnPropertyChanged("DownloadedDescription");
+            }
+        }
         public string NotDownloadedDescription
         {
             get
@@ -180,7 +198,7 @@ namespace TikTokDownloader
             }
             catch (Exception ex)
             {
-                DependencyService.Get<IToastService>().MakeText("Нет прав доступа к хранилищу");
+                DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("NoHavePermissions"));
                 FirebaseCrashlyticsServiceInstance.Log("checkIsDownloaded fail. Store permissions not granted");
                 FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 FirebaseCrashlyticsServiceInstance.SendUnsentReports();
@@ -234,22 +252,30 @@ namespace TikTokDownloader
 
             if (data.url_display_image_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Скачать изображения без водяного знака", downloadInfo = data.url_display_image_list });
+                imageList.Add(new ImageUrlDescription {
+                    description = TranslateExtension.GetText("DownloadImagesWithotWatermark"),
+                    downloadInfo = data.url_display_image_list });
             }
 
             if (data.url_owner_watermark_image_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Скачать изображения с водяным знаком", downloadInfo = data.url_owner_watermark_image_list });
+                imageList.Add(new ImageUrlDescription {
+                    description = TranslateExtension.GetText("DownloadImagesWithWatermark"),
+                    downloadInfo = data.url_owner_watermark_image_list });
             }
 
             if (data.url_user_watermark_image_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Скачать изображения с водяным знаком и значком пользователя", downloadInfo = data.url_user_watermark_image_list });
+                imageList.Add(new ImageUrlDescription {
+                    description = TranslateExtension.GetText("DownloadImagesWithWatermarkAndUser"),
+                    downloadInfo = data.url_user_watermark_image_list });
             }
 
             if (data.url_thumbnail_list.Count > 0)
             {
-                imageList.Add(new ImageUrlDescription { description = "Скачать миниатюру без водяного знака", downloadInfo = data.url_thumbnail_list });
+                imageList.Add(new ImageUrlDescription {
+                    description = TranslateExtension.GetText("DownloadThubnailWithoutWatermark"),
+                    downloadInfo = data.url_thumbnail_list });
             }
 
             DownloadButton.allDownloadButtons.Clear();
@@ -316,11 +342,14 @@ namespace TikTokDownloader
                 {
                     await DownloadAndSave(UrlDescriptions, contentType);
                 }
-                DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
+                DependencyService.Get<IToastService>().MakeText(
+                    isSaveToDownloads ?
+                    TranslateExtension.GetText("SavedToDownloads") :
+                    TranslateExtension.GetText("SavedToGallery"));
             }
             catch (Exception ex)
             {
-                DependencyService.Get<IToastService>().MakeText("Не удалось сохранить, попытайтесь снова");
+                DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("SaveFailTryAgain"));
                 FirebaseCrashlyticsServiceInstance.Log("download fail. httpclient or filesystem error");
                 FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 FirebaseCrashlyticsServiceInstance.SendUnsentReports();
@@ -336,7 +365,7 @@ namespace TikTokDownloader
                 var downloadInfo = UrlDescription;
                 if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
                 {
-                    DependencyService.Get<IToastService>().MakeText("Файл не найден");
+                    DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("FileNotFound"));
                     return;
                 }
                 List<string> filePaths = new List<string>();
@@ -355,7 +384,7 @@ namespace TikTokDownloader
                 {
                     if (downloadInfo.shareFilesPath == null || !File.Exists(downloadInfo.shareFilesPath))
                     {
-                        DependencyService.Get<IToastService>().MakeText("Файлы не найдены");
+                        DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("FilesNotFound"));
                         return;
                     }
                     if (intentType.Length == 0)
@@ -393,7 +422,7 @@ namespace TikTokDownloader
             }
             catch (Exception ex)
             {
-                DependencyService.Get<IToastService>().MakeText("Нет прав доступа к хранилищу");
+                DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("NoHavePermissions"));
                 FirebaseCrashlyticsServiceInstance.Log("download fail. store permissions not granted");
                 FirebaseCrashlyticsServiceInstance.RecordException(ex);
                 FirebaseCrashlyticsServiceInstance.SendUnsentReports();

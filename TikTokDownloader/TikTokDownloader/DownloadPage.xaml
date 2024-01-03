@@ -3,13 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tiktokdownloader="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.DownloadPage"
-             Title="Страница скачивания"
+             xmlns:local="clr-namespace:TikTokDownloader"
+             Title="{local:Translate DownloadActivityName}"
              BackgroundColor="White">
     <ContentPage.Content>
         <StackLayout>
             <ScrollView>
                 <StackLayout Padding="10" Spacing ="10" x:Name="buttonsStack">
-                    <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="Название"/>
+                    <Label TextColor="Black" Margin="25, 0, 25, 0" FontSize="Title" VerticalOptions="Center" HorizontalOptions="Start" Text="{local:Translate Name}"/>
                     <Frame CornerRadius="15">
                         <StackLayout Orientation="Horizontal">
                             <Image Source="{Binding data.dynamic_cover}" HorizontalOptions="Center" VerticalOptions="Center" HeightRequest="100" WidthRequest="100" Aspect="AspectFill"/>
@@ -18,12 +19,24 @@
                     </Frame>
                     <Frame CornerRadius="15" IsVisible="{Binding isHaveVideos}">
                         <StackLayout>
-                            <Label Margin="5, 0, 0, 10" TextColor="Black" Text="Видео" FontSize="Title" />
+                            <Label Margin="5, 0, 0, 10" TextColor="Black" Text="{local:Translate Video}" FontSize="Title" />
                             <StackLayout BindableLayout.ItemsSource="{Binding data.video_list}">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <tiktokdownloader:DownloadButton NotDownloadedDescription="{Binding description}" UrlDescription="{Binding}" contentType="VIDEO" FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" NotDownloadedColor="#afbdff" DownloadedColor="LightGreen" DownloadedDescription="Поделиться" TextColor="Black" Clicked="DownloadClicked"/>
+                                            <tiktokdownloader:DownloadButton
+                                                NotDownloadedDescription="{Binding description}"
+                                                DownloadedDescription="{Binding descriptionShare}"
+                                                UrlDescription="{Binding}" 
+                                                contentType="VIDEO"
+                                                FontSize="16"
+                                                TextTransform="None"
+                                                CornerRadius="15"
+                                                HeightRequest="60"
+                                                NotDownloadedColor="#afbdff"
+                                                DownloadedColor="LightGreen"
+                                                TextColor="Black"
+                                                Clicked="DownloadClicked"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -32,12 +45,24 @@
                     </Frame>
                     <Frame CornerRadius="15" IsVisible="{Binding isHaveImages}">
                         <StackLayout>
-                            <Label Margin="5, 0, 0, 10" TextColor="Black" Text="Изображения" FontSize="Title"/>
+                            <Label Margin="5, 0, 0, 10" TextColor="Black" Text="{local:Translate Images}" FontSize="Title"/>
                             <StackLayout BindableLayout.ItemsSource="{Binding imageList}">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <tiktokdownloader:DownloadButton NotDownloadedDescription="{Binding description}" UrlDescriptions="{Binding downloadInfo}" contentType="IMAGE" FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" NotDownloadedColor="#afbdff" DownloadedColor="LightGreen" DownloadedDescription="Поделиться" TextColor="Black" Clicked="DownloadClicked"/>
+                                            <tiktokdownloader:DownloadButton
+                                                NotDownloadedDescription="{Binding description}"
+                                                DownloadedDescription="{Binding descriptionShare}"
+                                                UrlDescriptions="{Binding downloadInfo}"
+                                                contentType="IMAGE"
+                                                FontSize="16"
+                                                TextTransform="None"
+                                                CornerRadius="15"
+                                                HeightRequest="60"
+                                                NotDownloadedColor="#afbdff"
+                                                DownloadedColor="LightGreen"
+                                                TextColor="Black"
+                                                Clicked="DownloadClicked"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -46,13 +71,25 @@
                     </Frame>
                     <Frame CornerRadius="15" IsVisible="{Binding isHaveMusic}">
                         <StackLayout>
-                            <Label Margin="5, 0, 0, 0" TextColor="Black" Text="Музыка" FontSize="Title"/>
+                            <Label Margin="5, 0, 0, 0" TextColor="Black" Text="{local:Translate Sound}" FontSize="Title"/>
                             <Label Margin="5, 0, 0, 0" TextColor="Black" Text="{Binding data.music_description}" FontSize="Subtitle"/>
                             <StackLayout BindableLayout.ItemsSource="{Binding data.music_list}">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Frame Padding="0" CornerRadius="15">
-                                            <tiktokdownloader:DownloadButton NotDownloadedDescription="{Binding description}" UrlDescription="{Binding}" contentType="MUSIC" FontSize="16" TextTransform="None" CornerRadius="15" HeightRequest="60" NotDownloadedColor="#afbdff" DownloadedColor="LightGreen" DownloadedDescription="Поделиться" TextColor="Black" Clicked="DownloadClicked"/>
+                                            <tiktokdownloader:DownloadButton
+                                                NotDownloadedDescription="{Binding description}"
+                                                DownloadedDescription="{Binding descriptionShare}"
+                                                UrlDescription="{Binding}"
+                                                contentType="MUSIC"
+                                                FontSize="16"
+                                                TextTransform="None"
+                                                CornerRadius="15"
+                                                HeightRequest="60"
+                                                NotDownloadedColor="#afbdff"
+                                                DownloadedColor="LightGreen"
+                                                TextColor="Black"
+                                                Clicked="DownloadClicked"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>

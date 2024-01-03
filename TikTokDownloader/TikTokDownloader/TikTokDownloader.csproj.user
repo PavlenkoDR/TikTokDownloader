@@ -3,5 +3,9 @@
   <PropertyGroup>
     <_LastSelectedProfileId>C:\dev\TikTokDownloader\TikTokDownloader\TikTokDownloader\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Update="Resource.ru-RU.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
