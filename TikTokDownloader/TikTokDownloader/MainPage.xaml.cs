@@ -9,9 +9,32 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Net;
+using Xamarin.Essentials;
 
 namespace TikTokDownloader
 {
+    public class HyperlinkSpan : Span
+    {
+        public static readonly BindableProperty UrlProperty =
+            BindableProperty.Create(nameof(Url), typeof(string), typeof(HyperlinkSpan), null);
+
+        public string Url
+        {
+            get { return (string)GetValue(UrlProperty); }
+            set { SetValue(UrlProperty, value); }
+        }
+
+        public HyperlinkSpan()
+        {
+            TextDecorations = TextDecorations.Underline;
+            TextColor = Color.Blue;
+            GestureRecognizers.Add(new TapGestureRecognizer
+            {
+                // Launcher.OpenAsync is provided by Xamarin.Essentials.
+                Command = new Command(async () => await Launcher.OpenAsync(Url))
+            });
+        }
+    }
 
     public partial class MainPage : ContentPage
     {
@@ -555,38 +578,53 @@ namespace TikTokDownloader
             }
         }
 
-        private async void Button_ClickedAsync(object sender, EventArgs e)
+
+
+        private void Button_ClickedAsync(object sender, EventArgs e)
+        {
+            Task.Run(() => {
+                runPreload();
+            });
+        }
+
+        private async void runPreload()
         {
             FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync");
-            downloadButton.IsEnabled = false;
+            var isPermissionsGranted = await Device.InvokeOnMainThreadAsync(async () => {
+                downloadButton.IsEnabled = false;
 
-            var fileService = DependencyService.Get<IFileService>();
-            bool permissionsGranted = await fileService.CheckPermissions();
-            if (!permissionsGranted)
-            {
-                FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync permissions not granted");
-                bool answer = await DisplayAlert("Нет прав доступа к хранилищу файлов", "Чтобы исправить проблему, можно переустановить программу и разрешить доступ, либо дать доступ в настройках. Открыть настройки приложения?", "Да", "Нет");
-                if (answer)
+                var fileService = DependencyService.Get<IFileService>();
+                bool permissionsGranted = await fileService.CheckPermissions();
+                if (!permissionsGranted)
                 {
-                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync open settings");
-                    var isOpened = fileService.OpenAppSettings();
-                    if (!isOpened)
+                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync permissions not granted");
+                    bool answer = await DisplayAlert("Нет прав доступа к хранилищу файлов", "Чтобы исправить проблему, можно переустановить программу и разрешить доступ, либо дать доступ в настройках. Открыть настройки приложения?", "Да", "Нет");
+                    if (answer)
                     {
-                        FirebaseCrashlyticsServiceInstance.Log("setting not opened");
-                        FirebaseCrashlyticsServiceInstance.RecordException(new Exception("can not open settings"));
-                        FirebaseCrashlyticsServiceInstance.SendUnsentReports();
-                        await DisplayAlert("Нет возможности открыть настройки", "Откройте настройки, найдите там приложение и разрешите доступ к хранилищу файлов вручную", "Хорошо");
+                        FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync open settings");
+                        var isOpened = fileService.OpenAppSettings();
+                        if (!isOpened)
+                        {
+                            FirebaseCrashlyticsServiceInstance.Log("setting not opened");
+                            FirebaseCrashlyticsServiceInstance.RecordException(new Exception("can not open settings"));
+                            FirebaseCrashlyticsServiceInstance.SendUnsentReports();
+                            await DisplayAlert("Нет возможности открыть настройки", "Откройте настройки, найдите там приложение и разрешите доступ к хранилищу файлов вручную", "Хорошо");
+                        }
                     }
+                    else
+                    {
+                        FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync grant permissions ignored");
+                        await DisplayAlert("Отказано в правах доступа", "Программа не может работать без прав доступа к файлам", "Я понимаю");
+                    }
+                    downloadButton.IsEnabled = true;
+                    return false;
                 }
-                else
-                {
-                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync grant permissions ignored");
-                    await DisplayAlert("Отказано в правах доступа", "Программа не может работать без прав доступа к файлам", "Я понимаю");
-                }
-                downloadButton.IsEnabled = true;
+                return true;
+            });
+            if (!isPermissionsGranted)
+            {
                 return;
             }
-            var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath() };
 
             if (!MatchTikTokUrl(videoURL))
             {
@@ -596,7 +634,9 @@ namespace TikTokDownloader
                 return;
             }
             var banner = new DownloadBanner();
-            await Navigation.PushModalAsync(banner);
+            Device.BeginInvokeOnMainThread(async () => {
+                await Navigation.PushModalAsync(banner);
+            });
             CancellationTokenSource cancellationTokenSource = null;
             int failsCount = 0;
             Mutex mutex = new Mutex();
@@ -638,7 +678,10 @@ namespace TikTokDownloader
             DownloadData result = null;
             for (int i = 1; i < 4; i++)
             {
-                banner.tryCount = i;
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    banner.tryCount = i;
+                });
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(25));
                 failsCount = 0;
@@ -660,19 +703,22 @@ namespace TikTokDownloader
                 }
                 cancellationTokenSource.Cancel();
             }
-            
-            
-            await Navigation.PopModalAsync();
-            if (result != null)
+
+            Device.BeginInvokeOnMainThread(async () =>
             {
-                FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync success");
-                await Navigation.PushAsync(new DownloadPage(result));
-            }
-            else
-            {
-                DependencyService.Get<IToastService>().MakeText("Попытайтесь снова");
-            }
-            downloadButton.IsEnabled = true;
+                await Navigation.PopModalAsync();
+                if (result != null)
+                {
+                    FirebaseCrashlyticsServiceInstance.Log("Button_ClickedAsync success");
+                    await Navigation.PushAsync(new DownloadPage(result));
+                }
+                else
+                {
+                    await DisplayAlert("Не удалось получить данные", "Сторонние сервисы недоступны по независящим от приложения причинам. Если не удастся скачать в течении некоторого времени - свяжитесь с разработчиком", "OK");
+                    DependencyService.Get<IToastService>().MakeText("Попытайтесь снова");
+                }
+                downloadButton.IsEnabled = true;
+            });
         }
 
         private void ImageButton_Clicked(object sender, EventArgs e)

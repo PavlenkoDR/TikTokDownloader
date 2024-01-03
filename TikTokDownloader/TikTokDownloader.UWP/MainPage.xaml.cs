@@ -37,12 +37,17 @@ namespace TikTokDownloader.UWP
             return Task.Run(() => { return ""; });
         }
 
+        public Task<string> getMusicPath()
+        {
+            return Task.Run(() => { return ""; });
+        }
+
         public bool OpenAppSettings()
         {
             return false;
         }
 
-        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads)
+        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads, ContentType contentType)
         {
             FolderPicker picker = new FolderPicker { SuggestedStartLocation = PickerLocationId.Downloads };
             picker.FileTypeFilter.Add("*");

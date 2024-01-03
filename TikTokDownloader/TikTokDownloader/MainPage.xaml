@@ -1,17 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:TikTokDownloader"
              x:Class="TikTokDownloader.MainPage"
              NavigationPage.HasNavigationBar="false"
              BackgroundColor="White"
              Title="Главная страница">
-    <Grid Padding="30">
+    <Grid Padding="30, 0, 30, 0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="9*"/>
-            <RowDefinition Height="11*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <StackLayout Grid.Row="0" VerticalOptions="EndAndExpand">
-            <Grid Padding="5" Margin="0,0,0,50" MinimumHeightRequest="300">
+            <Grid Padding="5" Margin="0,0,0,50" MinimumHeightRequest="300" RowSpacing="0">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -74,6 +75,36 @@
                 <Button x:Name="downloadButton" BackgroundColor="#afbdff" WidthRequest="140" HeightRequest="45" CornerRadius="15" Text="Скачать" Clicked="Button_ClickedAsync" TextColor="Black"/>
             </Frame>
             <Label TextColor="Black" VerticalOptions="StartAndExpand" Text="{Binding debugText}"/>
+        </StackLayout>
+        <StackLayout Padding="5" Grid.Row="2" VerticalOptions="End">
+            <Label TextColor="Black" Text="Контакты разработчика:"/>
+            <Label TextColor="Black">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Почта " />
+                        <local:HyperlinkSpan Text="pavlenkocraft@gmail.com"
+                                         Url="mailto:pavlenkocraft@gmail.com" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label TextColor="Black">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="ВК " />
+                        <local:HyperlinkSpan Text="@dimka.fitonyashka"
+                                         Url="https://vk.com/dimka.fitonyashka" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label TextColor="Black">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Telegram " />
+                        <local:HyperlinkSpan Text="@dimka_fitonyashka"
+                                         Url="https://t.me/dimka_fitonyashka" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
         </StackLayout>
     </Grid>
 

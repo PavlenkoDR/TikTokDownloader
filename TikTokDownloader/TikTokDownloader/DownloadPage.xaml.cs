@@ -120,6 +120,7 @@ namespace TikTokDownloader
         }
 
         public bool isDownloaded { get; private set; } = true;
+        public ContentType contentType { get; set; }
         public async void checkIsDownloaded()
         {
             FirebaseCrashlyticsServiceInstance.Log("checkIsDownloaded");
@@ -127,7 +128,7 @@ namespace TikTokDownloader
             {
                 isDownloaded = true;
                 var fileService = DependencyService.Get<IFileService>();
-                var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath() };
+                var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath(), await fileService.getMusicPath() };
 
                 if (UrlDescription != null)
                 {
@@ -265,13 +266,13 @@ namespace TikTokDownloader
                 if (isHaveVideos)
                 {
                     var url = data.video_list.Where(x => !x.withWatermark).ToList().First();
-                    await Download(url, null);
+                    await Download(url, null, ContentType.VIDEO);
                     Share(url, null);
                 }
                 else if (isHaveImages)
                 {
                     var urls = data.url_display_image_list;
-                    await Download(null, urls);
+                    await Download(null, urls, ContentType.IMAGE);
                     Share(null, urls);
                 }
                 DownloadButton.allDownloadButtons.ForEach(x => x.checkIsDownloaded());
@@ -284,24 +285,24 @@ namespace TikTokDownloader
             checkActivityFlags();
         }
 
-        private async Task DownloadAndSave(UrlDescription downloadInfo)
+        private async Task DownloadAndSave(UrlDescription downloadInfo, ContentType contentType)
         {
             var client = new HttpClient();
             var uri = new Uri(downloadInfo.url);
             var downloadBytes = await client.GetByteArrayAsync(uri);
-            var result = await DependencyService.Get<IFileService>().Save(downloadBytes, downloadInfo.fileName, isSaveToDownloads);
+            var result = await DependencyService.Get<IFileService>().Save(downloadBytes, downloadInfo.fileName, false, contentType);
             downloadInfo.shareFilesPath = result;
         }
 
-        private async Task DownloadAndSave(List<UrlDescription> downloadInfo)
+        private async Task DownloadAndSave(List<UrlDescription> downloadInfo, ContentType contentType)
         {
             foreach (var info in downloadInfo)
             {
-                await DownloadAndSave(info);
+                await DownloadAndSave(info, contentType);
             }
         }
 
-        private async Task Download(UrlDescription UrlDescription, List<UrlDescription> UrlDescriptions)
+        private async Task Download(UrlDescription UrlDescription, List<UrlDescription> UrlDescriptions, ContentType contentType)
         {
             await Navigation.PushModalAsync(new DownloadBanner());
 
@@ -309,12 +310,13 @@ namespace TikTokDownloader
             {
                 if (UrlDescription != null)
                 {
-                    await DownloadAndSave(UrlDescription);
+                    await DownloadAndSave(UrlDescription, contentType);
                 }
                 else if (UrlDescriptions != null)
                 {
-                    await DownloadAndSave(UrlDescriptions);
+                    await DownloadAndSave(UrlDescriptions, contentType);
                 }
+                DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
             }
             catch (Exception ex)
             {
@@ -325,7 +327,6 @@ namespace TikTokDownloader
             }
 
             await Navigation.PopModalAsync();
-            DependencyService.Get<IToastService>().MakeText(isSaveToDownloads ? "Сохранено в загрузки" : "Сохранено в галерею");
         }
 
         private void Share(UrlDescription UrlDescription, List<UrlDescription> UrlDescriptions)
@@ -386,7 +387,7 @@ namespace TikTokDownloader
                 }
                 else
                 {
-                    await Download(button.UrlDescription, button.UrlDescriptions);
+                    await Download(button.UrlDescription, button.UrlDescriptions, button.contentType);
                     button.checkIsDownloaded();
                 }
             }

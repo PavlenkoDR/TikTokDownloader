@@ -9,6 +9,9 @@ using Android.Content;
 using Android.Widget;
 using System.Collections.Generic;
 using System.IO;
+using Android;
+using static Xamarin.Essentials.Permissions;
+using System.Linq;
 
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FileService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ClipBoardService))]
@@ -38,34 +41,85 @@ namespace TikTokDownloader.Droid
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.SetVmPolicy(builder.Build());
             builder.DetectFileUriExposure();
+
+            //string[] permissions = new string[] {
+            //    Manifest.Permission.ManageExternalStorage,
+            //    Manifest.Permission.ReadExternalStorage,
+            //    Manifest.Permission.WriteExternalStorage
+            //};
+            //Platform.CurrentActivity.RequestPermissions(permissions, 1);
+
+            //try
+            //{
+            //    var pckg = Application.Context.ApplicationInfo.PackageName;
+            //    var uri = Android.Net.Uri.Parse("package:" + pckg);
+            //    Intent intent = new Intent(Android.Provider.Settings.ActionManageAppAllFilesAccessPermission, uri);
+            //    StartActivity(intent);
+            //}
+            //catch (Java.Lang.Exception)
+            //{
+            //    Intent intent = new Intent();
+            //    intent.SetAction(Android.Provider.Settings.ActionManageAppAllFilesAccessPermission);
+            //    StartActivity(intent);
+            //}
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
+            // Android 13 workaround
+            if (Xamarin.Essentials.DeviceInfo.Version.Major >= 13 && (permissions.Where(p => p.Equals("android.permission.WRITE_EXTERNAL_STORAGE")).Any() || permissions.Where(p => p.Equals("android.permission.READ_EXTERNAL_STORAGE")).Any()))
+            {
+                var wIdx = System.Array.IndexOf(permissions, "android.permission.WRITE_EXTERNAL_STORAGE");
+                var rIdx = System.Array.IndexOf(permissions, "android.permission.READ_EXTERNAL_STORAGE");
+
+                if (wIdx != -1 && wIdx < permissions.Length) grantResults[wIdx] = Permission.Granted;
+                if (rIdx != -1 && rIdx < permissions.Length) grantResults[rIdx] = Permission.Granted;
+            }
+
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+    public class ReadWriteStoragePermission : Xamarin.Essentials.Permissions.BasePlatformPermission
+    {
+        public override (string androidPermission, bool isRuntime)[] RequiredPermissions => new List<(string androidPermission, bool isRuntime)>
+        {
+            (Android.Manifest.Permission.ReadExternalStorage, true),
+            (Android.Manifest.Permission.WriteExternalStorage, true)
+        }.ToArray();
+    }
     public class FileService : IFileService
     {
         public async Task<bool> CheckPermissions()
         {
-            if (await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted &&
-                await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
             {
-                return false;
-            }
-            if (await Permissions.CheckStatusAsync<Permissions.StorageRead>() != PermissionStatus.Granted &&
-                await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted)
-            {
-                return false;
-            }
-            if (await Permissions.CheckStatusAsync<Permissions.Media>() != PermissionStatus.Granted &&
-                await Permissions.RequestAsync<Permissions.Media>() != PermissionStatus.Granted)
-            {
-                return false;
+                var status = await Permissions.CheckStatusAsync<ReadWriteStoragePermission>();
+                if (status != PermissionStatus.Granted)
+                {
+                    status = await RequestAsync<ReadWriteStoragePermission>();
+                }
+                if (status != PermissionStatus.Granted)
+                {
+                    return false;
+                }
             }
             return true;
+        }
+        public async Task<string> getMusicPath()
+        {
+            string path = null;
+            if (await CheckPermissions())
+            {
+                if (Environment.IsExternalStorageEmulated)
+                {
+                    path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryMusic).AbsolutePath;
+                }
+                else
+                {
+                    path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+                }
+            }
+            return path;
         }
         public async Task<string> getGalleryPath()
         {
@@ -99,11 +153,26 @@ namespace TikTokDownloader.Droid
             }
             return path;
         }
-        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads)
+        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads, ContentType contentType)
         {
             if (await CheckPermissions())
-            { 
-                string path = isSaveToDownloads ? await getDownloadsPath() : await getGalleryPath();
+            {
+                string path;
+                if (Xamarin.Essentials.DeviceInfo.Version.Major >= 13)
+                {
+                    if (contentType == ContentType.MUSIC)
+                    {
+                        path = await getMusicPath();
+                    }
+                    else
+                    {
+                        path = await getGalleryPath();
+                    }
+                }
+                else
+                {
+                    path = isSaveToDownloads ? await getDownloadsPath() : await getGalleryPath();
+                }
                 {
                     var pathDir = new Java.IO.File(path);
                     if (!pathDir.Exists())
