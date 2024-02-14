@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TikTokDownloader.IntercatContentPage"
+             xmlns:local="clr-namespace:TikTokDownloader"
+             BackgroundColor="#20a0a0a0">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+            </Grid.GestureRecognizers>
+            <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                <Frame
+                    BackgroundColor="White"
+                    InputTransparent="False"
+                    CornerRadius="15">
+                    <StackLayout>
+                        <Label
+                            FontSize="16"
+                            Text="{local:Translate Open}"
+                            IsVisible="{Binding isOpenEnabled}"
+                            HorizontalOptions="Center"
+                            TextColor="Black"/>
+                        <Label
+                            FontSize="16"
+                            Text="{local:Translate Share}"
+                            IsVisible="{Binding isShareEnabled}"
+                            HorizontalOptions="Center"
+                            TextColor="Black"/>
+                        <Button
+                            FontSize="16"
+                            TextTransform="None"
+                            CornerRadius="15"
+                            HeightRequest="60"
+                            BackgroundColor="#afbdff"
+                            TextColor="Black"
+                            IsVisible="{Binding isVideoWithWatermarkEnabled}"
+                            Text="{local:Translate VideoWithWatermark}"
+                            Clicked="VideoWithWatermark_Clicked"/>
+                        <Button
+                            FontSize="16"
+                            TextTransform="None"
+                            CornerRadius="15"
+                            HeightRequest="60"
+                            BackgroundColor="#afbdff"
+                            TextColor="Black"
+                            IsVisible="{Binding isVideoWithoutWatermarkEnabled}"
+                            Text="{local:Translate VideoWithoutWatermark}"
+                            Clicked="VideoWithoutWatermark_Clicked"/>
+                        <Button
+                            FontSize="16"
+                            TextTransform="None"
+                            CornerRadius="15"
+                            HeightRequest="60"
+                            BackgroundColor="#afbdff"
+                            TextColor="Black"
+                            IsVisible="{Binding isImagesWithWatermarkEnabled}"
+                            Text="{local:Translate ImagesWithWatermark}"
+                            Clicked="ImagesWithWatermark_Clicked"/>
+                        <Button
+                            FontSize="16"
+                            TextTransform="None"
+                            CornerRadius="15"
+                            HeightRequest="60"
+                            BackgroundColor="#afbdff"
+                            TextColor="Black"
+                            IsVisible="{Binding isImagesWithoutWatermarkEnabled}"
+                            Text="{local:Translate ImagesWithoutWatermark}"
+                            Clicked="ImagesWithoutWatermark_Clicked"/>
+                        <Button
+                            FontSize="16"
+                            TextTransform="None"
+                            CornerRadius="15"
+                            HeightRequest="60"
+                            BackgroundColor="#afbdff"
+                            TextColor="Black"
+                            IsVisible="{Binding isMusicEnabled}"
+                            Text="{local:Translate Music}"
+                            Clicked="Music_Clicked"/>
+                    </StackLayout>
+                </Frame>
+                <Frame
+                    BackgroundColor="Red"
+                    HorizontalOptions="EndAndExpand"
+                    VerticalOptions="StartAndExpand"
+                    CornerRadius="90"
+                    TranslationX="20"
+                    TranslationY="-20"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    Padding="0">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                    </Frame.GestureRecognizers>
+                    <Label
+                        Text="✖"
+                        FontSize="16"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"/>
+                </Frame>
+            </Grid>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

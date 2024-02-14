@@ -7,7 +7,7 @@ using System.Text;
 
 namespace TikTokDownloader
 {
-    struct JsonData
+    struct SettingsJsonData
     {
         public string language;
     }
@@ -19,7 +19,7 @@ namespace TikTokDownloader
         public static void SetLanguage(in string language)
         {
             CultureInfo.CurrentCulture = new CultureInfo(language);
-            var obj = new JsonData { language = language };
+            var obj = new SettingsJsonData { language = language };
             var jsonString = JsonConvert.SerializeObject(obj);
             File.WriteAllText(path, jsonString);
         }
@@ -34,7 +34,7 @@ namespace TikTokDownloader
             if (File.Exists(path))
             {
                 var jsonString = File.ReadAllText(path);
-                var obj = JsonConvert.DeserializeObject<JsonData>(jsonString);
+                var obj = JsonConvert.DeserializeObject<SettingsJsonData>(jsonString);
                 if (obj.language != null)
                 {
                     language = obj.language;

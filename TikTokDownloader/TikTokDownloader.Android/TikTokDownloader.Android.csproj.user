@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <SelectedDevice>Xiaomi 23013PC75G</SelectedDevice>
-    <ActiveDebugProfile>Xiaomi 23013PC75G %28Android 13.0 — API 33%29</ActiveDebugProfile>
-    <DefaultDevice>pixel_5_-_api_33</DefaultDevice>
+    <SelectedDevice>nexus_one_-_api_33</SelectedDevice>
+    <ActiveDebugProfile>Nexus One - API 33 %28Android 13.0 — API 33%29</ActiveDebugProfile>
+    <DefaultDevice>nexus_one_-_api_33</DefaultDevice>
     <AndroidDesignerPreferredTheme>MainTheme</AndroidDesignerPreferredTheme>
-    <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>
+    <SelectedPlatformGroup>Emulator</SelectedPlatformGroup>
   </PropertyGroup>
   <PropertyGroup>
     <ReferencePath>C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot\</ReferencePath>

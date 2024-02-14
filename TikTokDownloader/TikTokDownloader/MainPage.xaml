@@ -6,115 +6,209 @@
              NavigationPage.HasNavigationBar="false"
              BackgroundColor="White"
              Title="{local:Translate MainActivityName}">
-    <Grid Padding="30, 0, 30, 0">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="200*"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="10*"/>
-            <RowDefinition Height="10*"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="200*"/>
+            <RowDefinition Height="5*"/>
         </Grid.RowDefinitions>
-        <Frame Grid.Row="0" HorizontalOptions="EndAndExpand" VerticalOptions="StartAndExpand" Padding="10" Margin="5">
-            <StackLayout>
-                <Label Text="{Binding languageProperty, Mode=TwoWay}" TextColor="Black"/>
+        <Grid Grid.Column="1" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120*"/>
+                <RowDefinition Height="100*"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <StackLayout Grid.Row="0" VerticalOptions="FillAndExpand">
+                <Grid MinimumHeightRequest="50">
+                    <Frame HorizontalOptions="End" VerticalOptions="StartAndExpand" Padding="0">
+                        <Grid HorizontalOptions="End">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="5*"/>
+                                <RowDefinition Height="100*"/>
+                                <RowDefinition Height="5*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="100*"/>
+                                <ColumnDefinition Width="5*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="1"
+                                   Grid.Column="1"
+                                   Text="{Binding languageProperty, Mode=TwoWay}"
+                                   TextColor="Black"
+                                   HorizontalOptions="CenterAndExpand"
+                                   VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </Grid>
+                <Grid VerticalOptions="CenterAndExpand">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="200*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5*"/>
+                        <RowDefinition Height="200*"/>
+                        <RowDefinition Height="5*"/>
+                    </Grid.RowDefinitions>
+                    <StackLayout Grid.Column="1" Grid.Row="1">
+                        <Grid RowSpacing="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackLayout Grid.Row="0" Orientation="Horizontal" HorizontalOptions="Start">
+                                <Label TextColor="Black"
+                                   Text="{local:Translate HelpInfo1}"
+                                   VerticalOptions="CenterAndExpand"
+                                   HorizontalOptions="Start"/>
+                                <local:ScalebleImage Source="{Binding shareImageSource}"
+                                                 VerticalOptions="CenterAndExpand"
+                                                 HorizontalOptions="Start"
+                                                 Aspect="AspectFit"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Start">
+                                <Label TextColor="Black"
+                                   Text="{local:Translate HelpInfo2}"
+                                   VerticalOptions="CenterAndExpand"
+                                   HorizontalOptions="Start"/>
+                                <local:ScalebleImage Source="{Binding linkImageSource}"
+                                                 VerticalOptions="CenterAndExpand"
+                                                 Aspect="AspectFit"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2" Orientation="Horizontal" HorizontalOptions="Start">
+                                <Label TextColor="Black"
+                                   Text="{local:Translate HelpInfo3}"
+                                   VerticalOptions="CenterAndExpand"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="3" Orientation="Horizontal" HorizontalOptions="Start">
+                                <Label TextColor="Black"
+                                   Text="{local:Translate HelpInfo4}"
+                                   VerticalOptions="CenterAndExpand"/>
+                            </StackLayout>
+                        </Grid>
+                    </StackLayout>
+                </Grid>
             </StackLayout>
-            <Frame.GestureRecognizers>
-                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-            </Frame.GestureRecognizers>
-        </Frame>
-        <StackLayout Grid.Row="0" VerticalOptions="EndAndExpand">
-            <Grid Padding="5" Margin="0,0,0,50" MinimumHeightRequest="300" RowSpacing="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <StackLayout Grid.Row="0" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="{local:Translate HelpInfo1}" VerticalOptions="CenterAndExpand"/>
-                    <Image Source="{Binding shareImageSource}" VerticalOptions="CenterAndExpand"/>
-                </StackLayout>
-                <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="{local:Translate HelpInfo2}" VerticalOptions="CenterAndExpand"/>
-                    <Image Source="{Binding linkImageSource}" VerticalOptions="CenterAndExpand"/>
-                </StackLayout>
-                <StackLayout Grid.Row="2" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="{local:Translate HelpInfo3}" VerticalOptions="CenterAndExpand"/>
-                </StackLayout>
-                <StackLayout Grid.Row="3" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-                    <Label TextColor="Black" Text="{local:Translate HelpInfo4}" VerticalOptions="CenterAndExpand"/>
-                </StackLayout>
-            </Grid>
-        </StackLayout>
-        <StackLayout Grid.Row="1" Margin="0, 10, 0, 0" VerticalOptions="StartAndExpand">
-            <Grid>
-                <Frame Padding="10, 0, 5, 0" CornerRadius="15">
-                    <Frame.BackgroundColor>
-                        <OnPlatform x:TypeArguments="Color">
-                            <On Platform="Android" Value="#eaeaea" />
-                        </OnPlatform>
-                    </Frame.BackgroundColor>
-                    <Grid>
-                        <Editor BackgroundColor="#eaeaea" TextColor="Black" PlaceholderColor="Gray" x:Name="urlEditor" Placeholder="{local:Translate LinkHere}" Text="{Binding videoURL, Mode=TwoWay}" VerticalOptions="FillAndExpand" AutoSize="TextChanges">
-                            <Editor.Margin>
-                                <OnPlatform x:TypeArguments="Thickness">
-                                    <On Platform="Android" Value="0, 0, 60, 0" />
-                                    <On Platform="UWP" Value="0, 0, 70, 0" />
-                                </OnPlatform>
-                            </Editor.Margin>
-                        </Editor>
-                        <BoxView BackgroundColor="#eaeaea" HeightRequest="11" VerticalOptions="End">
-                            <BoxView.IsVisible>
-                                <OnPlatform x:TypeArguments="x:Boolean">
-                                    <On Platform="UWP" Value="False" />
-                                    <On Platform="Android" Value="True" />
-                                </OnPlatform>
-                            </BoxView.IsVisible>
-                        </BoxView>
-                    </Grid>
+            <StackLayout Grid.Row="1" Margin="0, 10, 0, 0" VerticalOptions="StartAndExpand">
+                <Grid>
+                    <Frame Padding="10, 0, 5, 0" CornerRadius="15">
+                        <Frame.BackgroundColor>
+                            <OnPlatform x:TypeArguments="Color">
+                                <On Platform="Android" Value="#eaeaea" />
+                            </OnPlatform>
+                        </Frame.BackgroundColor>
+                        <Grid>
+                            <Editor BackgroundColor="#eaeaea"
+                                    TextColor="Black"
+                                    PlaceholderColor="Gray"
+                                    x:Name="urlEditor"
+                                    Placeholder="{local:Translate LinkHere}"
+                                    Text="{Binding videoURL, Mode=TwoWay}"
+                                    VerticalOptions="FillAndExpand"
+                                    AutoSize="TextChanges">
+                                <Editor.Margin>
+                                    <OnPlatform x:TypeArguments="Thickness">
+                                        <On Platform="Android" Value="0, 0, 60, 0" />
+                                        <On Platform="UWP" Value="0, 0, 70, 0" />
+                                    </OnPlatform>
+                                </Editor.Margin>
+                            </Editor>
+                            <BoxView BackgroundColor="#eaeaea" HeightRequest="11" VerticalOptions="End">
+                                <BoxView.IsVisible>
+                                    <OnPlatform x:TypeArguments="x:Boolean">
+                                        <On Platform="UWP" Value="False" />
+                                        <On Platform="Android" Value="True" />
+                                    </OnPlatform>
+                                </BoxView.IsVisible>
+                            </BoxView>
+                        </Grid>
+                    </Frame>
+                    <StackLayout Orientation="Horizontal"
+                                 HorizontalOptions="End"
+                                 VerticalOptions="Center"
+                                 Margin="0, 0, 5, 0">
+                        <Frame Padding="0, 0, 0, 0" BorderColor="Black" CornerRadius="30">
+                            <Button Margin="0, 0, 0, 0"
+                                    BackgroundColor="White" Text="📋"
+                                    FontSize="15"
+                                    FontAttributes="Bold"
+                                    CornerRadius="90"
+                                    HeightRequest="30"
+                                    WidthRequest="30"
+                                    Padding="2"
+                                    VerticalOptions="Center"
+                                    Clicked="Button_Clicked"/>
+                        </Frame>
+                        <Frame Padding="0, 0, 0, 0" BorderColor="Black" CornerRadius="30">
+                            <Button Margin="0, 0, 0, 0"
+                                    BackgroundColor="White"
+                                    Text="🗑️"
+                                    FontSize="15"
+                                    FontAttributes="Bold"
+                                    CornerRadius="90"
+                                    HeightRequest="30"
+                                    WidthRequest="30"
+                                    Padding="2"
+                                    VerticalOptions="Center"
+                                    Clicked="ImageButton_Clicked"/>
+                        </Frame>
+                    </StackLayout>
+                </Grid>
+                <Frame Padding="0, 0, 0, 0" CornerRadius="15" HorizontalOptions="Center">
+                    <Button x:Name="downloadButton"
+                            BackgroundColor="#afbdff"
+                            WidthRequest="140"
+                            HeightRequest="45"
+                            CornerRadius="15"
+                            Text="{local:Translate Download}"
+                            Clicked="Button_ClickedAsync"
+                            TextColor="Black"/>
                 </Frame>
-                <StackLayout Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Center" Margin="0, 0, 5, 0">
-                    <Frame Padding="0, 0, 0, 0" BorderColor="Black" CornerRadius="30">
-                        <Button Margin="0, 0, 0, 0" BackgroundColor="White" Text="📋" FontSize="15" FontAttributes="Bold" CornerRadius="90" HeightRequest="30" WidthRequest="30" Padding="2" VerticalOptions="Center" Clicked="Button_Clicked"/>
-                    </Frame>
-                    <Frame Padding="0, 0, 0, 0" BorderColor="Black" CornerRadius="30">
-                        <Button Margin="0, 0, 0, 0" BackgroundColor="White" Text="🗑️" FontSize="15" FontAttributes="Bold" CornerRadius="90" HeightRequest="30" WidthRequest="30" Padding="2" VerticalOptions="Center" Clicked="ImageButton_Clicked"/>
-                    </Frame>
-                </StackLayout>
-            </Grid>
-            <Frame Padding="0, 0, 0, 0" CornerRadius="15" HorizontalOptions="Center">
-                <Button x:Name="downloadButton" BackgroundColor="#afbdff" WidthRequest="140" HeightRequest="45" CornerRadius="15" Text="{local:Translate Download}" Clicked="Button_ClickedAsync" TextColor="Black"/>
-            </Frame>
-            <Label TextColor="Black" VerticalOptions="StartAndExpand" Text="{Binding debugText}"/>
-        </StackLayout>
-        <StackLayout Padding="5" Grid.Row="2" VerticalOptions="End">
-            <Label TextColor="Black" Text="{local:Translate DeveloperContacts}"/>
-            <Label TextColor="Black">
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="{local:Translate ContatctMail}" />
-                        <local:HyperlinkSpan Text="pavlenkocraft@gmail.com"
-                                         Url="mailto:pavlenkocraft@gmail.com" />
-                    </FormattedString>
-                </Label.FormattedText>
-            </Label>
-            <Label TextColor="Black">
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="{local:Translate ContatctVK}" />
-                        <local:HyperlinkSpan Text="@dimka.fitonyashka"
-                                         Url="https://vk.com/dimka.fitonyashka" />
-                    </FormattedString>
-                </Label.FormattedText>
-            </Label>
-            <Label TextColor="Black">
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="{local:Translate ContatctTelegram}" />
-                        <local:HyperlinkSpan Text="@dimka_fitonyashka"
-                                         Url="https://t.me/dimka_fitonyashka" />
-                    </FormattedString>
-                </Label.FormattedText>
-            </Label>
-        </StackLayout>
+                <Label TextColor="Black" VerticalOptions="StartAndExpand" Text="{Binding debugText}"/>
+            </StackLayout>
+            <StackLayout Grid.Row="2" Padding="5" VerticalOptions="End">
+                <Label TextColor="Black" Text="{local:Translate DeveloperContacts}"/>
+                <Label TextColor="Black">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{local:Translate ContatctMail}" />
+                            <local:HyperlinkSpan Text="pavlenkocraft@gmail.com"
+                                             Url="mailto:pavlenkocraft@gmail.com" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label TextColor="Black">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{local:Translate ContatctVK}" />
+                            <local:HyperlinkSpan Text="@dimka.fitonyashka"
+                                             Url="https://vk.com/dimka.fitonyashka" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label TextColor="Black">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{local:Translate ContatctTelegram}" />
+                            <local:HyperlinkSpan Text="@dimka_fitonyashka"
+                                             Url="https://t.me/dimka_fitonyashka" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </StackLayout>
+        </Grid>
     </Grid>
 
 </ContentPage>

@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="29" android:versionName="1.10" package="com.PavlenkoDR.tiktokdownloader" android:installLocation="internalOnly">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="31" android:versionName="1.10.2" package="com.PavlenkoDR.tiktokdownloader" android:installLocation="internalOnly">
 	<uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
+	<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+	<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 	<application android:label="TTDownloader" android:theme="@style/MainTheme" android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"></application>
 </manifest>

@@ -17,7 +17,7 @@
     </NavigationPage>
     <NavigationPage IconImageSource="{Binding historyImageSource}" Title="{local:Translate History}">
         <x:Arguments>
-            <ContentPage/>
+            <tiktokdownloader:HistoryPage/>
         </x:Arguments>
     </NavigationPage>
 </TabbedPage>

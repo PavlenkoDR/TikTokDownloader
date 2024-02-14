@@ -12,6 +12,7 @@ using System.IO;
 using Android;
 using static Xamarin.Essentials.Permissions;
 using System.Linq;
+using static Android.Icu.Text.CaseMap;
 
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FileService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ClipBoardService))]
@@ -20,7 +21,7 @@ using System.Linq;
 namespace TikTokDownloader.Droid
 {
     [IntentFilter(new[] { Intent.ActionSend }, Categories = new[] { Intent.CategoryDefault }, DataMimeType = "text/plain", Label = "@string/DownloadAndShare")]
-    [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
+    [Activity(Label = "TikTokDownloader", Icon = "@mipmap/ic_launcher", Theme = "@style/MainTheme", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
@@ -65,18 +66,7 @@ namespace TikTokDownloader.Droid
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
-            // Android 13 workaround
-            if (Xamarin.Essentials.DeviceInfo.Version.Major >= 13 && (permissions.Where(p => p.Equals("android.permission.WRITE_EXTERNAL_STORAGE")).Any() || permissions.Where(p => p.Equals("android.permission.READ_EXTERNAL_STORAGE")).Any()))
-            {
-                var wIdx = System.Array.IndexOf(permissions, "android.permission.WRITE_EXTERNAL_STORAGE");
-                var rIdx = System.Array.IndexOf(permissions, "android.permission.READ_EXTERNAL_STORAGE");
-
-                if (wIdx != -1 && wIdx < permissions.Length) grantResults[wIdx] = Permission.Granted;
-                if (rIdx != -1 && rIdx < permissions.Length) grantResults[rIdx] = Permission.Granted;
-            }
-
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
@@ -88,22 +78,58 @@ namespace TikTokDownloader.Droid
             (Android.Manifest.Permission.WriteExternalStorage, true)
         }.ToArray();
     }
+    public class ManageStoragePermission : Xamarin.Essentials.Permissions.BasePlatformPermission
+    {
+        public override (string androidPermission, bool isRuntime)[] RequiredPermissions => new List<(string androidPermission, bool isRuntime)>
+        {
+            (Android.Manifest.Permission.ManageExternalStorage, true)
+        }.ToArray();
+    }
+    public class ManageMediaPermission : Xamarin.Essentials.Permissions.BasePlatformPermission
+    {
+        public override (string androidPermission, bool isRuntime)[] RequiredPermissions => new List<(string androidPermission, bool isRuntime)>
+        {
+            (Android.Manifest.Permission.ManageMedia, true)
+        }.ToArray();
+    }
+    public class ReadMediaPermission : Xamarin.Essentials.Permissions.BasePlatformPermission
+    {
+        public override (string androidPermission, bool isRuntime)[] RequiredPermissions => new List<(string androidPermission, bool isRuntime)>
+        {
+            (Android.Manifest.Permission.ReadMediaAudio, true),
+            (Android.Manifest.Permission.ReadMediaVideo, true),
+            (Android.Manifest.Permission.ReadMediaImages, true)
+        }.ToArray();
+    }
     public class FileService : IFileService
     {
         public async Task<bool> CheckPermissions()
         {
+            var isGranted = false;
+            
+            var status = await Permissions.CheckStatusAsync<ReadWriteStoragePermission>();
+            if (status != PermissionStatus.Granted)
             {
-                var status = await Permissions.CheckStatusAsync<ReadWriteStoragePermission>();
+                status = await RequestAsync<ReadWriteStoragePermission>();
+            }
+            if (status == PermissionStatus.Granted)
+            {
+                isGranted = true;
+            }
+            
+            if (!isGranted)
+            {
+                status = await Permissions.CheckStatusAsync<ReadMediaPermission>();
                 if (status != PermissionStatus.Granted)
                 {
-                    status = await RequestAsync<ReadWriteStoragePermission>();
+                    status = await RequestAsync<ReadMediaPermission>();
                 }
-                if (status != PermissionStatus.Granted)
+                if (status == PermissionStatus.Granted)
                 {
-                    return false;
+                    isGranted = true;
                 }
             }
-            return true;
+            return isGranted;
         }
         public async Task<string> getMusicPath()
         {
@@ -137,41 +163,21 @@ namespace TikTokDownloader.Droid
             }
             return path;
         }
-        public async Task<string> getDownloadsPath()
-        {
-            string path = null;
-            if (await CheckPermissions())
-            {
-                if (Environment.IsExternalStorageEmulated)
-                {
-                    path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDownloads).AbsolutePath;
-                }
-                else
-                {
-                    path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-                }
-            }
-            return path;
-        }
-        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads, ContentType contentType)
+        public async Task<string> Save(byte[] data, string name, ContentType contentType)
         {
             if (await CheckPermissions())
             {
                 string path;
                 if (Xamarin.Essentials.DeviceInfo.Version.Major >= 13)
                 {
-                    if (contentType == ContentType.MUSIC)
-                    {
-                        path = await getMusicPath();
-                    }
-                    else
-                    {
-                        path = await getGalleryPath();
-                    }
+                }
+                if (contentType == ContentType.MUSIC)
+                {
+                    path = await getMusicPath();
                 }
                 else
                 {
-                    path = isSaveToDownloads ? await getDownloadsPath() : await getGalleryPath();
+                    path = await getGalleryPath();
                 }
                 {
                     var pathDir = new Java.IO.File(path);
@@ -272,6 +278,24 @@ namespace TikTokDownloader.Droid
                 return false;
             }
             return true;
+        }
+        public void PlayVideoFromLocalStorage(string filePath)
+        {
+            try
+            {
+                var file = new Java.IO.File(filePath);
+                var uri = Android.Net.Uri.FromFile(file);
+                Intent intent = new Intent();
+                intent.SetAction(Intent.ActionView);
+                intent.AddFlags(ActivityFlags.NewTask);
+                intent.AddFlags(ActivityFlags.GrantReadUriPermission);
+                intent.SetDataAndType(uri, "video/*");
+                Android.App.Application.Context.ApplicationContext.StartActivity(intent);
+            }
+            catch (Java.Lang.Exception)
+            {
+
+            }
         }
     }
 

@@ -7,35 +7,11 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using System.Linq;
 using static Xamarin.Forms.BindableProperty;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using static TikTokDownloader.ContentDownloadManager;
 
 namespace TikTokDownloader
 {
-    public class UrlDescription
-    {
-        public string url { get; set; }
-        private string _description;
-        public string description { get => $"{TranslateExtension.GetText("Download")} {_description}"; set => _description = value; }
-        public string descriptionShare { get => TranslateExtension.GetText("Share"); }
-        public string fileName { get; set; }
-        public string shareFilesPath { get; set; } = null;
-        public bool withWatermark { get; set; } = false;
-    }
-    public class DownloadData
-    {
-        public string video_description { get; set; }
-        public string dynamic_cover { get; set; }
-        public string cover { get; set; }
-        public List<UrlDescription> video_list { get; set; }
-
-        public string music_description { get; set; }
-        public List<UrlDescription> music_list { get; set; }
-
-        public List<UrlDescription> url_display_image_list { get; set; }
-        public List<UrlDescription> url_owner_watermark_image_list { get; set; }
-        public List<UrlDescription> url_user_watermark_image_list { get; set; }
-        public List<UrlDescription> url_thumbnail_list { get; set; }
-    }
-
     public struct ImageUrlDescription
     {
         public string description { get; set; }
@@ -43,7 +19,7 @@ namespace TikTokDownloader
         public List<UrlDescription> downloadInfo { get; set; }
     }
 
-    public class DownloadButton : Button
+    public class DownloadButton : Xamarin.Forms.Button
     {
 
         public static List<DownloadButton> allDownloadButtons = new List<DownloadButton>();
@@ -146,7 +122,7 @@ namespace TikTokDownloader
             {
                 isDownloaded = true;
                 var fileService = DependencyService.Get<IFileService>();
-                var paths = new[] { await fileService.getDownloadsPath(), await fileService.getGalleryPath(), await fileService.getMusicPath() };
+                var paths = new[] { await fileService.getGalleryPath(), await fileService.getMusicPath() };
 
                 if (UrlDescription != null)
                 {
@@ -193,6 +169,7 @@ namespace TikTokDownloader
                     BackgroundColor = _NotDownloadedColor ?? BackgroundColor;
                     Text = NotDownloadedDescription ?? Text;
                 }
+
                 OnPropertyChanged("BackgroundColor");
                 OnPropertyChanged("Text");
             }
@@ -228,26 +205,13 @@ namespace TikTokDownloader
     {
         public DownloadData data { get; }
         public List<ImageUrlDescription> imageList { get; } = new List<ImageUrlDescription>();
-        public static bool isSaveToDownloads { get; set; } = false;
 
-        public int SelectedIndex
-        {
-            get
-            {
-                return isSaveToDownloads ? 1 : 0;
-            }
-            set
-            {
-                isSaveToDownloads = value == 1;
-            }
-        }
         public bool isHaveVideos { get => data.video_list.Count > 0; }
         public bool isHaveMusic { get => data.music_list.Count > 0; }
         public bool isHaveDescription { get => data.video_description != null && data.video_description.Length > 0; }
         public bool isHaveImages { get => imageList.Count > 0; }
         public DownloadPage(DownloadData data)
         {
-            isSaveToDownloads = false;
             this.data = data;
 
             if (data.url_display_image_list.Count > 0)
@@ -294,12 +258,14 @@ namespace TikTokDownloader
                     var url = data.video_list.Where(x => !x.withWatermark).ToList().First();
                     await Download(url, null, ContentType.VIDEO);
                     Share(url, null);
+                    AddToHistory(url, null, ContentType.VIDEO);
                 }
                 else if (isHaveImages)
                 {
                     var urls = data.url_display_image_list;
                     await Download(null, urls, ContentType.IMAGE);
                     Share(null, urls);
+                    AddToHistory(null, urls, ContentType.VIDEO);
                 }
                 DownloadButton.allDownloadButtons.ForEach(x => x.checkIsDownloaded());
             }
@@ -316,8 +282,13 @@ namespace TikTokDownloader
             var client = new HttpClient();
             var uri = new Uri(downloadInfo.url);
             var downloadBytes = await client.GetByteArrayAsync(uri);
-            var result = await DependencyService.Get<IFileService>().Save(downloadBytes, downloadInfo.fileName, false, contentType);
+            var result = await DependencyService.Get<IFileService>().Save(downloadBytes, downloadInfo.fileName, contentType);
             downloadInfo.shareFilesPath = result;
+        }
+
+        private Task DownloadAndSaveThubnail()
+        {
+            return ContentDownloadManager.DownloadAndSaveThubnail(data);
         }
 
         private async Task DownloadAndSave(List<UrlDescription> downloadInfo, ContentType contentType)
@@ -334,6 +305,7 @@ namespace TikTokDownloader
 
             try
             {
+                await DownloadAndSaveThubnail();
                 if (UrlDescription != null)
                 {
                     await DownloadAndSave(UrlDescription, contentType);
@@ -342,10 +314,7 @@ namespace TikTokDownloader
                 {
                     await DownloadAndSave(UrlDescriptions, contentType);
                 }
-                DependencyService.Get<IToastService>().MakeText(
-                    isSaveToDownloads ?
-                    TranslateExtension.GetText("SavedToDownloads") :
-                    TranslateExtension.GetText("SavedToGallery"));
+                DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("SavedToGallery"));
             }
             catch (Exception ex)
             {
@@ -402,6 +371,34 @@ namespace TikTokDownloader
             }
         }
 
+        private void AddToHistory(UrlDescription urlDescription, List<UrlDescription> urlDescriptions, ContentType contentType)
+        {
+            var historyData = new HistoryData()
+            {
+                author = data.author,
+                video_description = data.video_description,
+                music_description = data.music_description,
+                thubnail_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"{data.aweme_id}.jpg"),
+                not_loaded = false
+            };
+
+            if (contentType == ContentType.VIDEO)
+            {
+                historyData.video_path = urlDescription.shareFilesPath;
+            }
+            else if (contentType == ContentType.IMAGE)
+            {
+                historyData.images_path = new SortedSet<string>(urlDescriptions.Select(x => x.shareFilesPath));
+            }
+            else if (contentType == ContentType.MUSIC)
+            {
+                historyData.music_path = urlDescription.shareFilesPath;
+            }
+
+            History.AddData(data.aweme_id, historyData);
+            History.Save();
+        }
+
         private async void DownloadClicked(object sender, EventArgs e)
         {
             FirebaseCrashlyticsServiceInstance.Log("DownloadClicked");
@@ -418,6 +415,8 @@ namespace TikTokDownloader
                 {
                     await Download(button.UrlDescription, button.UrlDescriptions, button.contentType);
                     button.checkIsDownloaded();
+
+                    AddToHistory(button.UrlDescription, button.UrlDescriptions, button.contentType);
                 }
             }
             catch (Exception ex)

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TikTokDownloader.HistoryPage"
+             NavigationPage.HasNavigationBar="false"
+             BackgroundColor="White">
+    <ContentPage.Content>
+        <Grid>
+            <Grid>
+                <ListView ItemsSource="{Binding historyList}" HasUnevenRows="True">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <Frame CornerRadius="15" Margin="10, 5, 10, 5">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                                    </Frame.GestureRecognizers>
+                                    <Grid>
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Image Grid.Column="0" Source="{Binding thubnail_path}" WidthRequest="100" HeightRequest="100" Aspect="AspectFill" VerticalOptions="Center"/>
+                                            <StackLayout Grid.Column="1" Spacing="15">
+                                                <Label Text="{Binding author}" TextColor="Black" FontSize="14" FontAttributes="Bold"/>
+                                                <Label Text="{Binding video_description}" TextColor="Black" FontSize="14"/>
+                                                <Label Text="{Binding date}" TextColor="Black" FontSize="10" VerticalOptions="EndAndExpand"/>
+                                            </StackLayout>
+                                            <StackLayout Grid.Column="2"  VerticalOptions="Center">
+                                                <Button Margin="0, 0, 0, 0" BorderColor="Black" BorderWidth="1" BackgroundColor="White" Text="🗑️" FontSize="20" FontAttributes="Bold" CornerRadius="90" HeightRequest="40" WidthRequest="40" Padding="2"/>
+                                                <Button Margin="0, 0, 0, 0" BorderColor="Black" BorderWidth="1" BackgroundColor="White" Text="🔗" FontSize="20" FontAttributes="Bold" CornerRadius="90" HeightRequest="40" WidthRequest="40" Padding="2"/>
+                                            </StackLayout>
+                                        </Grid>
+                                        <ActivityIndicator IsVisible="{Binding not_loaded}" IsRunning="true" Scale="1" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
+                                    </Grid>
+                                </Frame>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+            <Button
+                Text="🔄"
+                VerticalOptions="EndAndExpand"
+                HorizontalOptions="EndAndExpand"
+                CornerRadius="90"
+                WidthRequest="70"
+                HeightRequest="70"
+                Margin="10"
+                BackgroundColor="#00ffffff"
+                FontSize="30"
+                Clicked="Button_Clicked"/>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

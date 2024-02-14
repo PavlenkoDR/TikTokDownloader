@@ -10,12 +10,12 @@ namespace TikTokDownloader
     }
     public interface IFileService
     {
-        Task<string> Save(byte[] data, string name, bool isSaveToDownloads, ContentType contentType);
+        Task<string> Save(byte[] data, string name, ContentType contentType);
         void ShareMediaFile(string title, string[] filesPath, string intentType);
         Task<string> getGalleryPath();
-        Task<string> getDownloadsPath();
         Task<string> getMusicPath();
         Task<bool> CheckPermissions();
         bool OpenAppSettings();
+        void PlayVideoFromLocalStorage(string filePath);
     }
 }

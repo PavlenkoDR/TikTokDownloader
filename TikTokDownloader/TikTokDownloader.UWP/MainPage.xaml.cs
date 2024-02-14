@@ -27,11 +27,6 @@ namespace TikTokDownloader.UWP
             return Task.Run(()=> { return true; });
         }
 
-        public Task<string> getDownloadsPath()
-        {
-            return Task.Run(() => { return ""; });
-        }
-
         public Task<string> getGalleryPath()
         {
             return Task.Run(() => { return ""; });
@@ -47,7 +42,12 @@ namespace TikTokDownloader.UWP
             return false;
         }
 
-        public async Task<string> Save(byte[] data, string name, bool isSaveToDownloads, ContentType contentType)
+        public void PlayVideoFromLocalStorage(string filePath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<string> Save(byte[] data, string name, ContentType contentType)
         {
             FolderPicker picker = new FolderPicker { SuggestedStartLocation = PickerLocationId.Downloads };
             picker.FileTypeFilter.Add("*");

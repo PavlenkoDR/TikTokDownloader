@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -14,7 +15,7 @@ namespace TikTokDownloader
         public App()
         {
             Settings.Load();
-            
+
             InitializeComponent();
 
             var navigationPage = new NavigationPage(new MainPage());
