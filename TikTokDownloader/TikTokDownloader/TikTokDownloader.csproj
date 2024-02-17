@@ -5,12 +5,15 @@
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <ApplicationIcon>icon.ico</ApplicationIcon>
 	<NeutralLanguage>en-US</NeutralLanguage>
+	<Configurations>Debug;Release;Release_RuStore</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_RuStore|AnyCPU'" />
 
   <ItemGroup>
     <None Remove="Assets\history-icon.png" />

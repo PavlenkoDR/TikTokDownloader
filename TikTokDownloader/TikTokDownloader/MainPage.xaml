@@ -73,19 +73,23 @@
                                    Text="{local:Translate HelpInfo1}"
                                    VerticalOptions="CenterAndExpand"
                                    HorizontalOptions="Start"/>
-                                <local:ScalebleImage Source="{Binding shareImageSource}"
-                                                 VerticalOptions="CenterAndExpand"
-                                                 HorizontalOptions="Start"
-                                                 Aspect="AspectFit"/>
+                                <Image Source="{Binding shareImageSource}"
+                                      VerticalOptions="CenterAndExpand"
+                                      HorizontalOptions="Start"
+                                      Aspect="AspectFit"
+                                      WidthRequest="40"
+                                      HeightRequest="40"/>
                             </StackLayout>
                             <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Start">
                                 <Label TextColor="Black"
                                    Text="{local:Translate HelpInfo2}"
                                    VerticalOptions="CenterAndExpand"
                                    HorizontalOptions="Start"/>
-                                <local:ScalebleImage Source="{Binding linkImageSource}"
-                                                 VerticalOptions="CenterAndExpand"
-                                                 Aspect="AspectFit"/>
+                                <Image Source="{Binding linkImageSource}"
+                                       VerticalOptions="CenterAndExpand"
+                                       Aspect="AspectFit"
+                                       WidthRequest="40"
+                                       HeightRequest="40"/>
                             </StackLayout>
                             <StackLayout Grid.Row="2" Orientation="Horizontal" HorizontalOptions="Start">
                                 <Label TextColor="Black"

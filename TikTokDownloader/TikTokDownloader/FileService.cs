@@ -12,8 +12,8 @@ namespace TikTokDownloader
     {
         Task<string> Save(byte[] data, string name, ContentType contentType);
         void ShareMediaFile(string title, string[] filesPath, string intentType);
-        Task<string> getGalleryPath();
-        Task<string> getMusicPath();
+        string getGalleryPath();
+        string getMusicPath();
         Task<bool> CheckPermissions();
         bool OpenAppSettings();
         void PlayVideoFromLocalStorage(string filePath);

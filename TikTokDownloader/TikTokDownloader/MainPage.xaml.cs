@@ -15,31 +15,6 @@ using static TikTokDownloader.ContentDownloadManager;
 
 namespace TikTokDownloader
 {
-    public class ScalebleImage : Image
-    {
-        double? startHeight;
-        double? startWidth;
-        protected override void OnSizeAllocated(double width, double height)
-        {
-            var hParent = (Parent as View)?.Height;
-            if (hParent.HasValue)
-            {
-                double scale = hParent.Value / Height;
-                if (!startHeight.HasValue)
-                {
-                    startHeight = hParent * 2.0;
-                }
-                if (!startWidth.HasValue)
-                {
-                    startWidth = Width * scale * 2.0;
-                }
-                WidthRequest = startWidth.Value;
-                HeightRequest = startHeight.Value;
-            }
-            base.OnSizeAllocated(width, height);
-        }
-    }
-
     public class HyperlinkSpan : Span
     {
         public static readonly BindableProperty UrlProperty =

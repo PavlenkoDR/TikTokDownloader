@@ -37,6 +37,11 @@
     <EnableLLVM>false</EnableLLVM>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <BundleAssemblies>false</BundleAssemblies>
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>C:\Users\Дмитрий\AppData\Local\Xamarin\Mono for Android\Keystore\NellOne - 2\NellOne.keystore</AndroidSigningKeyStore>
+    <AndroidSigningStorePass>Tup0K3ki4</AndroidSigningStorePass>
+    <AndroidSigningKeyAlias>NellOne</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>Tup0K3ki4</AndroidSigningKeyPass>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -69,6 +74,20 @@
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidUseAapt2>true</AndroidUseAapt2>
     <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_RuStore|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Release_RuStore\</OutputPath>
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <LangVersion>8.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <BundleAssemblies>false</BundleAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -125,6 +144,26 @@
     <Folder Include="Values\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\RuStoreActivityLauncher\RuStoreActivityLauncher.csproj">
+      <Project>{3b33b2a2-f77f-44a5-9057-c6d545f8c76b}</Project>
+      <Name>RuStoreActivityLauncher</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RuStoreCore\RuStoreCore.csproj">
+      <Project>{ed8c6b3e-0e6e-4491-9841-d0830d7d4c55}</Project>
+      <Name>RuStoreCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RuStoreExecutor\RuStoreExecutor.csproj">
+      <Project>{886ddd64-17d6-40fd-b0ea-c0d620a3709a}</Project>
+      <Name>RuStoreExecutor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RuStoreMetrics\RuStoreMetrics.csproj">
+      <Project>{78d41764-9178-4c6d-8d72-3043a5f6edf0}</Project>
+      <Name>RuStoreMetrics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RuStoreReview\RuStoreReview.csproj">
+      <Project>{05f81479-d703-490a-8f1e-504fe1bc53f7}</Project>
+      <Name>RuStoreReview</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TikTokDownloader\TikTokDownloader.csproj">
       <Project>{79E70F66-175B-4086-8E00-AD81A09C13C6}</Project>
       <Name>TikTokDownloader</Name>

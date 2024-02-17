@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "338890688030",
+    "project_id": "tiktokdownloader-371704",
+    "storage_bucket": "tiktokdownloader-371704.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338890688030:android:21a953f02d73666b4e100f",
+        "android_client_info": {
+          "package_name": "com.PavlenkoDR.tiktokdownloader"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338890688030-6njcqdijfmeuaeq6jvnstoj72hne0j0a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAE6lRd9FtTHgSQsLC-53iqwqRX4cugBEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338890688030-6njcqdijfmeuaeq6jvnstoj72hne0j0a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

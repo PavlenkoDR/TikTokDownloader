@@ -13,11 +13,17 @@ using Android;
 using static Xamarin.Essentials.Permissions;
 using System.Linq;
 using static Android.Icu.Text.CaseMap;
+using RU.Rustore.Sdk.Review;
+using RU.Rustore.Sdk.Review.Model;
+using Java.Util.Concurrent;
+using Java.Lang;
+using Firebase.Crashlytics.Internal.Common;
 
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FileService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ClipBoardService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.ToastService))]
 [assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.FirebaseService))]
+[assembly: Xamarin.Forms.Dependency(typeof(TikTokDownloader.Droid.RuStore))]
 namespace TikTokDownloader.Droid
 {
     [IntentFilter(new[] { Intent.ActionSend }, Categories = new[] { Intent.CategoryDefault }, DataMimeType = "text/plain", Label = "@string/DownloadAndShare")]
@@ -70,6 +76,8 @@ namespace TikTokDownloader.Droid
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+
+
     public class ReadWriteStoragePermission : Xamarin.Essentials.Permissions.BasePlatformPermission
     {
         public override (string androidPermission, bool isRuntime)[] RequiredPermissions => new List<(string androidPermission, bool isRuntime)>
@@ -101,102 +109,188 @@ namespace TikTokDownloader.Droid
             (Android.Manifest.Permission.ReadMediaImages, true)
         }.ToArray();
     }
+    public class RuStore : IRuStore
+    {
+        static RuStoreReviewManager manager = null;
+        static ReviewInfo info = null;
+        public void launchReviewFlow()
+        {
+            requestReviewFlow((Java.Lang.Object obj) => {
+                info = obj as ReviewInfo;
+                launchReviewFlowInternal();
+            });
+        }
+        private void requestReviewFlow(System.Action<Java.Lang.Object> action = null)
+        {
+            if (info != null)
+            {
+                return;
+            }
+            try
+            {
+                manager = manager ?? RuStoreReviewManagerFactory.Instance.Create(Application.Context);
+
+                System.IntPtr classHandle = new System.IntPtr();
+                System.IntPtr theClass = JNIEnv.FindClass("ru/rustore/sdk/review/RuStoreReviewManager", ref classHandle);
+                System.IntPtr theMethod = JNIEnv.GetMethodID(theClass, "requestReviewFlow", "()Lru/rustore/sdk/core/tasks/Task;");
+
+                System.IntPtr result = JNIEnv.CallObjectMethod(manager.Handle, theMethod);
+
+                var resultCasted = Java.Lang.Object.GetObject<RU.Rustore.Sdk.Core.Tasks.Task>(result, JniHandleOwnership.TransferLocalRef);
+
+
+                resultCasted.AddOnSuccessListener(new SuccessListener(action));
+                resultCasted.AddOnFailureListener(new FailureListener());
+            }
+            catch (Java.Lang.Exception ex)
+            {
+                FirebaseCrashlyticsServiceInstance.Log("Init RuStoreReviewManager or Get/Call requestReviewFlow method failed");
+                FirebaseCrashlyticsServiceInstance.RecordException(ex);
+            }
+        }
+        private void launchReviewFlowInternal()
+        {
+            if (info == null)
+            {
+                return;
+            }
+
+            try
+            {
+                System.IntPtr classHandle = new System.IntPtr();
+                System.IntPtr theClass = JNIEnv.FindClass("ru/rustore/sdk/review/RuStoreReviewManager", ref classHandle);
+                System.IntPtr theMethod = JNIEnv.GetMethodID(theClass, "launchReviewFlow", "(Lru/rustore/sdk/review/model/ReviewInfo;)Lru/rustore/sdk/core/tasks/Task;");
+
+                System.IntPtr result = JNIEnv.CallObjectMethod(manager.Handle, theMethod, new JValue(info));
+
+                var resultCasted = Java.Lang.Object.GetObject<RU.Rustore.Sdk.Core.Tasks.Task>(result, JniHandleOwnership.TransferLocalRef);
+
+                resultCasted.AddOnSuccessListener(new SuccessListener());
+                resultCasted.AddOnFailureListener(new FailureListener());
+            }
+            catch (Java.Lang.Exception ex)
+            {
+                FirebaseCrashlyticsServiceInstance.Log("Get/Call launchReviewFlow method failed");
+                FirebaseCrashlyticsServiceInstance.RecordException(ex);
+            }
+        }
+
+        class SuccessListener : Java.Lang.Object, RU.Rustore.Sdk.Core.Tasks.IOnSuccessListener
+        {
+            System.Action<Java.Lang.Object> action;
+            public SuccessListener(System.Action<Java.Lang.Object> action = null)
+            {
+                this.action = action;
+            }
+            public void OnSuccess(Java.Lang.Object result)
+            {
+                action?.Invoke(result);
+            }
+        }
+
+        class FailureListener : Java.Lang.Object, RU.Rustore.Sdk.Core.Tasks.IOnFailureListener
+        {
+            System.Action<Throwable> action;
+            public FailureListener(System.Action<Throwable> action = null)
+            {
+                this.action = action;
+            }
+            public void OnFailure(Throwable throwable)
+            {
+                action?.Invoke(throwable);
+            }
+        }
+    }
     public class FileService : IFileService
     {
         public async Task<bool> CheckPermissions()
         {
-            var isGranted = false;
-            
-            var status = await Permissions.CheckStatusAsync<ReadWriteStoragePermission>();
-            if (status != PermissionStatus.Granted)
             {
-                status = await RequestAsync<ReadWriteStoragePermission>();
+                var status = await Permissions.CheckStatusAsync<ReadWriteStoragePermission>();
+                if (status != PermissionStatus.Granted)
+                {
+                    status = await RequestAsync<ReadWriteStoragePermission>();
+                }
+                if (status == PermissionStatus.Granted)
+                {
+                    return true;
+                }
             }
-            if (status == PermissionStatus.Granted)
+
             {
-                isGranted = true;
-            }
-            
-            if (!isGranted)
-            {
-                status = await Permissions.CheckStatusAsync<ReadMediaPermission>();
+                var status = await Permissions.CheckStatusAsync<ReadMediaPermission>();
                 if (status != PermissionStatus.Granted)
                 {
                     status = await RequestAsync<ReadMediaPermission>();
                 }
                 if (status == PermissionStatus.Granted)
                 {
-                    isGranted = true;
+                    return true;
                 }
             }
-            return isGranted;
+            return false;
         }
-        public async Task<string> getMusicPath()
+        public string getMusicPath()
         {
             string path = null;
-            if (await CheckPermissions())
+            if (Environment.IsExternalStorageEmulated)
             {
-                if (Environment.IsExternalStorageEmulated)
-                {
-                    path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryMusic).AbsolutePath;
-                }
-                else
-                {
-                    path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-                }
+                path = Environment.GetExternalStoragePublicDirectory(Environment.DirectoryMusic).AbsolutePath;
+            }
+            else
+            {
+                path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
             }
             return path;
         }
-        public async Task<string> getGalleryPath()
+        public string getGalleryPath()
         {
             string path = null;
-            if (await CheckPermissions())
+            if (Environment.IsExternalStorageEmulated)
             {
-                if (Environment.IsExternalStorageEmulated)
-                {
-                    path = Path.Combine(Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDcim).AbsolutePath, "Camera");
-                }
-                else
-                {
-                    path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-                }
+                path = Path.Combine(Environment.GetExternalStoragePublicDirectory(Environment.DirectoryDcim).AbsolutePath, "Camera");
+            }
+            else
+            {
+                path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
             }
             return path;
         }
         public async Task<string> Save(byte[] data, string name, ContentType contentType)
         {
-            if (await CheckPermissions())
+            if (!await CheckPermissions())
             {
-                string path;
-                if (Xamarin.Essentials.DeviceInfo.Version.Major >= 13)
+                return null;
+            }
+            string path;
+            if (contentType == ContentType.MUSIC)
+            {
+                path = getMusicPath();
+            }
+            else
+            {
+                path = getGalleryPath();
+            }
+            {
+                var pathDir = new Java.IO.File(path);
+                if (!pathDir.Exists())
                 {
+                    pathDir.Mkdir();
                 }
-                if (contentType == ContentType.MUSIC)
-                {
-                    path = await getMusicPath();
-                }
-                else
-                {
-                    path = await getGalleryPath();
-                }
-                {
-                    var pathDir = new Java.IO.File(path);
-                    if (!pathDir.Exists())
-                    {
-                        pathDir.Mkdir();
-                    }
-                }
-                string filePath = Path.Combine(path, name);
-                FileOutputStream fileOutputStream = new FileOutputStream(new Java.IO.File(filePath));
-                fileOutputStream.Write(data);
-                fileOutputStream.Close();
-
-                var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
-                mediaScanIntent.SetData(Android.Net.Uri.FromFile(new Java.IO.File(filePath)));
-                Application.Context.SendBroadcast(mediaScanIntent);
+            }
+            string filePath = Path.Combine(path, name);
+            if (System.IO.File.Exists(filePath))
+            {
                 return filePath;
             }
-            return null;
+            FileOutputStream fileOutputStream = new FileOutputStream(new Java.IO.File(filePath));
+            fileOutputStream.Write(data);
+            fileOutputStream.Close();
+
+            var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
+            mediaScanIntent.SetData(Android.Net.Uri.FromFile(new Java.IO.File(filePath)));
+            Application.Context.SendBroadcast(mediaScanIntent);
+            return filePath;
         }
         public async void ShareMediaFile(string title, string[] filesPath, string intentType)
         {

@@ -9,6 +9,8 @@ using System.Linq;
 using static Xamarin.Forms.BindableProperty;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using static TikTokDownloader.ContentDownloadManager;
+using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 namespace TikTokDownloader
 {
@@ -115,14 +117,14 @@ namespace TikTokDownloader
 
         public bool isDownloaded { get; private set; } = true;
         public ContentType contentType { get; set; }
-        public async void checkIsDownloaded()
+        public void checkIsDownloaded()
         {
             FirebaseCrashlyticsServiceInstance.Log("checkIsDownloaded");
             try
             {
                 isDownloaded = true;
                 var fileService = DependencyService.Get<IFileService>();
-                var paths = new[] { await fileService.getGalleryPath(), await fileService.getMusicPath() };
+                var paths = new[] { fileService.getGalleryPath(), fileService.getMusicPath() };
 
                 if (UrlDescription != null)
                 {
@@ -200,6 +202,11 @@ namespace TikTokDownloader
         }
     }
 
+    public class Profile
+    {
+        public int downloadCount { get; set; }
+    }
+
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class DownloadPage : ContentPage
     {
@@ -210,6 +217,7 @@ namespace TikTokDownloader
         public bool isHaveMusic { get => data.music_list.Count > 0; }
         public bool isHaveDescription { get => data.video_description != null && data.video_description.Length > 0; }
         public bool isHaveImages { get => imageList.Count > 0; }
+        static string profilePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "history");
         public DownloadPage(DownloadData data)
         {
             this.data = data;
@@ -244,8 +252,30 @@ namespace TikTokDownloader
 
             DownloadButton.allDownloadButtons.Clear();
             InitializeComponent();
-            
+
             BindingContext = this;
+
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                Profile profile = new Profile() { downloadCount = 0 };
+                if (File.Exists(profilePath))
+                {
+                    var jsonString = File.ReadAllText(profilePath);
+                    profile = JsonConvert.DeserializeObject<Profile>(jsonString);
+                }
+                ++profile.downloadCount;
+                if (profile.downloadCount >= 5)
+                {
+#if DEBUG || RELEASE_RUSTORE
+                    DependencyService.Get<IRuStore>().launchReviewFlow();
+#endif
+                    profile.downloadCount = 0;
+                }
+                {
+                    var jsonString = JsonConvert.SerializeObject(profile);
+                    File.WriteAllText(profilePath, jsonString);
+                }
+            });
         }
 
         private async void checkActivityFlags()
@@ -258,14 +288,14 @@ namespace TikTokDownloader
                     var url = data.video_list.Where(x => !x.withWatermark).ToList().First();
                     await Download(url, null, ContentType.VIDEO);
                     Share(url, null);
-                    AddToHistory(url, null, ContentType.VIDEO);
+                    //AddToHistory(url, null, ContentType.VIDEO);
                 }
                 else if (isHaveImages)
                 {
                     var urls = data.url_display_image_list;
                     await Download(null, urls, ContentType.IMAGE);
                     Share(null, urls);
-                    AddToHistory(null, urls, ContentType.VIDEO);
+                    //AddToHistory(null, urls, ContentType.VIDEO);
                 }
                 DownloadButton.allDownloadButtons.ForEach(x => x.checkIsDownloaded());
             }
@@ -402,31 +432,34 @@ namespace TikTokDownloader
         private async void DownloadClicked(object sender, EventArgs e)
         {
             FirebaseCrashlyticsServiceInstance.Log("DownloadClicked");
-            var button = sender as DownloadButton;
-            button.IsEnabled = false;
-            try
+            await Device.InvokeOnMainThreadAsync(async () =>
             {
-                if (button.isDownloaded)
+                var button = sender as DownloadButton;
+                button.IsEnabled = false;
+                try
                 {
-                    Share(button.UrlDescription, button.UrlDescriptions);
-                    button.checkIsDownloaded();
-                }
-                else
-                {
-                    await Download(button.UrlDescription, button.UrlDescriptions, button.contentType);
-                    button.checkIsDownloaded();
+                    if (button.isDownloaded)
+                    {
+                        Share(button.UrlDescription, button.UrlDescriptions);
+                        button.checkIsDownloaded();
+                    }
+                    else
+                    {
+                        await Download(button.UrlDescription, button.UrlDescriptions, button.contentType);
+                        button.checkIsDownloaded();
 
-                    AddToHistory(button.UrlDescription, button.UrlDescriptions, button.contentType);
+                        AddToHistory(button.UrlDescription, button.UrlDescriptions, button.contentType);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("NoHavePermissions"));
-                FirebaseCrashlyticsServiceInstance.Log("download fail. store permissions not granted");
-                FirebaseCrashlyticsServiceInstance.RecordException(ex);
-                FirebaseCrashlyticsServiceInstance.SendUnsentReports();
-            }
-            button.IsEnabled = true;
+                catch (Exception ex)
+                {
+                    DependencyService.Get<IToastService>().MakeText(TranslateExtension.GetText("NoHavePermissions"));
+                    FirebaseCrashlyticsServiceInstance.Log("download fail. store permissions not granted");
+                    FirebaseCrashlyticsServiceInstance.RecordException(ex);
+                    FirebaseCrashlyticsServiceInstance.SendUnsentReports();
+                }
+                button.IsEnabled = true;
+            });
         }
 
         private string getIntentType(UrlDescription description)

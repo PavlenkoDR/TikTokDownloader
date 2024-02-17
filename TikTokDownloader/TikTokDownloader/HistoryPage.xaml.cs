@@ -61,7 +61,7 @@ namespace TikTokDownloader
                 return;
             }
             var fileService = DependencyService.Get<IFileService>();
-            var paths = new[] { await fileService.getGalleryPath(), await fileService.getMusicPath() };
+            var paths = new[] { fileService.getGalleryPath(), fileService.getMusicPath() };
             SortedDictionary<DateTime, FindedAwemeData> findedAwemes = new SortedDictionary<DateTime, FindedAwemeData>();
             foreach (var path in paths)
             {

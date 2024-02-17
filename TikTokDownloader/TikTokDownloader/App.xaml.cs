@@ -20,6 +20,10 @@ namespace TikTokDownloader
 
             var navigationPage = new NavigationPage(new MainPage());
             navigationPage.BarBackgroundColor = Color.FromHex("#6983fa");
+
+#if RELEASE_RUSTORE
+            //RuStoreReviewManager.Instance.Init();
+#endif
             MainPage = navigationPage;
         }
 
